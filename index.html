@@ -1,117 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>POS vs Inventory Excel Compare</title>
-
+<title>Crispy Chicken – Sales Comparison System</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <style>
-body { font-family: Arial; background:#f4f4f4; padding:20px }
-table { border-collapse: collapse; width:100%; background:#fff; margin-top:10px }
-th, td { border:1px solid #ccc; padding:6px; text-align:center }
-th { background:#333; color:#fff }
-.ok { background:#c8e6c9 }
-.warn { background:#fff9c4 }
-.bad { background:#ffcdd2 }
-input { width:95% }
+body{font-family:Arial;background:#f4f6f8;padding:20px}
+h2{color:#b30000}
+select,input{padding:6px;margin:5px}
+table{border-collapse:collapse;width:100%;margin-top:15px;background:#fff}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+th{background:#333;color:#fff}
+.diff-pos{background:#c6efce}
+.diff-neg{background:#ffc7ce}
 </style>
 </head>
 
 <body>
 
-<h2>📊 POS vs Inventory (Excel Upload)</h2>
+<h2>🍗 Crispy Chicken – Sales Difference System</h2>
 
-<!-- Mapping -->
-<h3>1️⃣ Item Mapping</h3>
-<table id="mapTable">
-<tr><th>POS Item</th><th>Unified Item</th></tr>
-<tr><td><input value="Daily MIX Meal"></td><td><input value="MIX MEAL"></td></tr>
-<tr><td><input value="Daily MIX Meal Noon"></td><td><input value="MIX MEAL"></td></tr>
-<tr><td><input value="BUCKET MEAL MIX"></td><td><input value="MIX MEAL"></td></tr>
-<tr><td><input value="ULTIMATE Spicy"></td><td><input value="ULTIMATE"></td></tr>
-<tr><td><input value="Ultimate S Noon Offers"></td><td><input value="ULTIMATE"></td></tr>
-</table>
+<label>Branch:</label>
+<select id="branch">
+  <option>Crispy Chicken-Hamdan St</option>
+  <option>Crispy Chicken Khaldia</option>
+  <option>Crispy Chicken Shabiya 11</option>
+  <option>Crispy Chicken Muroor</option>
+  <option>Crispy Chicken Al Electra</option>
+  <option>Crispy Chicken Al Barsha</option>
+  <option>Crispy Chicken Al Satwa</option>
+  <option>Crispy Chicken Al Rigga</option>
+  <option>Crispy Chicken Al Majaz</option>
+</select>
 
-<hr>
+<br><br>
 
-<!-- Upload -->
-<h3>2️⃣ Upload Excel Files</h3>
-POS Excel:
-<input type="file" id="posFile"><br><br>
-Report Excel:
-<input type="file" id="repFile"><br><br>
+<label>POS Excel:</label>
+<input type="file" id="posFile">
 
-<button onclick="process()">🔍 Compare</button>
+<label>Platform Excel:</label>
+<input type="file" id="platFile">
 
-<!-- Result -->
-<h3>3️⃣ Result</h3>
+<button onclick="process()">Compare</button>
+
 <table id="result">
-<tr><th>Unified Item</th><th>POS Qty</th><th>Report Qty</th><th>Difference</th></tr>
+<thead>
+<tr>
+  <th>Recipe</th>
+  <th>POS Qty</th>
+  <th>Platform Qty</th>
+  <th>Difference</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
 
 <script>
-let posData = [], repData = [];
+// 🔁 Recipe Mapping
+const recipeMap = {
+  "daily spicy meal":"Daily Spicy Meal",
+  "daily spicy meal noon":"Daily Spicy Meal",
+  "daily offer spicy meal":"Daily Spicy Meal",
 
-function readExcel(file, callback) {
+  "daily original meal":"Daily Original Meal",
+  "daily original meal noon":"Daily Original Meal",
+  "daily offer original meal":"Daily Original Meal",
+
+  "ultimate spicy":"Ultimate Spicy",
+  "ultimate s noon offers":"Ultimate Spicy",
+
+  "ultimate original":"Ultimate Original",
+  "ultimate o noon offers":"Ultimate Original"
+};
+
+let posData={}, platData={};
+
+function normalize(name){
+  name = name.toLowerCase().trim();
+  return recipeMap[name] || name;
+}
+
+function readExcel(file, callback){
   const reader = new FileReader();
   reader.onload = e => {
-    const wb = XLSX.read(e.target.result, {type:'binary'});
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    callback(XLSX.utils.sheet_to_json(sheet));
+    const wb = XLSX.read(e.target.result,{type:"binary"});
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+    callback(sheet);
   };
   reader.readAsBinaryString(file);
 }
 
-document.getElementById("posFile").addEventListener("change", e=>{
-  readExcel(e.target.files[0], d => posData = d);
-});
+function process(){
+  readExcel(posFile.files[0], pos => {
+    pos.forEach(r=>{
+      let key = normalize(r.Name || r.Item);
+      posData[key] = (posData[key]||0) + Number(r["Qty Sold"]||0);
+    });
 
-document.getElementById("repFile").addEventListener("change", e=>{
-  readExcel(e.target.files[0], d => repData = d);
-});
+    readExcel(platFile.files[0], plat => {
+      plat.forEach(r=>{
+        let key = normalize(r.Name || r.Item);
+        platData[key] = (platData[key]||0) + Number(r["Qty Sold"]||0);
+      });
 
-function getMapping(){
-  let map = {};
-  document.querySelectorAll("#mapTable tr").forEach((r,i)=>{
-    if(i>0){
-      let i1 = r.cells[0].querySelector("input").value.trim();
-      let i2 = r.cells[1].querySelector("input").value.trim();
-      map[i1] = i2;
-    }
+      render();
+    });
   });
-  return map;
 }
 
-function process(){
-  const map = getMapping();
-  let posSum = {}, repSum = {};
+function render(){
+  const tbody = document.querySelector("#result tbody");
+  tbody.innerHTML="";
+  const all = new Set([...Object.keys(posData),...Object.keys(platData)]);
 
-  posData.forEach(r=>{
-    let name = r.Item;
-    let qty = Number(r["Qty Sold"]) || 0;
-    let u = map[name] || name;
-    posSum[u] = (posSum[u] || 0) + qty;
-  });
-
-  repData.forEach(r=>{
-    let name = r.Item;
-    let qty = Number(r["Qty Sold"]) || 0;
-    repSum[name] = (repSum[name] || 0) + qty;
-  });
-
-  const table = document.getElementById("result");
-  table.innerHTML = "<tr><th>Unified Item</th><th>POS Qty</th><th>Report Qty</th><th>Difference</th></tr>";
-
-  Object.keys(posSum).forEach(k=>{
-    let diff = posSum[k] - (repSum[k] || 0);
-    let cls = diff===0 ? "ok" : Math.abs(diff)<=5 ? "warn" : "bad";
-    table.innerHTML += `
-      <tr class="${cls}">
+  all.forEach(k=>{
+    const p = posData[k]||0;
+    const pl = platData[k]||0;
+    const d = p-pl;
+    tbody.innerHTML += `
+      <tr class="${d<0?'diff-neg':'diff-pos'}">
         <td>${k}</td>
-        <td>${posSum[k]}</td>
-        <td>${repSum[k] || 0}</td>
-        <td>${diff}</td>
+        <td>${p}</td>
+        <td>${pl}</td>
+        <td>${d}</td>
       </tr>`;
   });
 }
