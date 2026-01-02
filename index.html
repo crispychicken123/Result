@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>POS vs Inventory Comparison</title>
+<style>
+body { font-family: Arial; background:#f4f4f4; padding:20px }
+table { border-collapse: collapse; width:100%; margin-bottom:20px; background:#fff }
+th, td { border:1px solid #ccc; padding:6px; text-align:center }
+th { background:#333; color:#fff }
+input { width:95%; padding:4px }
+button { padding:10px 20px; font-size:16px; cursor:pointer }
+.ok { background:#c8e6c9 }
+.bad { background:#ffcdd2 }
+.warn { background:#fff9c4 }
+</style>
+</head>
+
+<body>
+
+<h2>🔁 POS vs Inventory Comparison (Dynamic)</h2>
+
+<!-- Mapping Table -->
+<h3>1️⃣ Item Mapping (Dynamic)</h3>
+<table id="mapTable">
+<tr><th>POS Item Name</th><th>Unified Item</th></tr>
+<tr><td><input value="Daily MIX Meal"></td><td><input value="MIX MEAL"></td></tr>
+<tr><td><input value="Daily MIX Meal Noon"></td><td><input value="MIX MEAL"></td></tr>
+<tr><td><input value="BUCKET MEAL MIX"></td><td><input value="MIX MEAL"></td></tr>
+<tr><td><input value="ULTIMATE Spicy"></td><td><input value="ULTIMATE"></td></tr>
+<tr><td><input value="Ultimate S Noon Offers"></td><td><input value="ULTIMATE"></td></tr>
+</table>
+
+<!-- POS Data -->
+<h3>2️⃣ POS Sales</h3>
+<table id="posTable">
+<tr><th>Item</th><th>Qty Sold</th></tr>
+<tr><td><input value="Daily MIX Meal"></td><td><input value="575"></td></tr>
+<tr><td><input value="Daily MIX Meal Noon"></td><td><input value="597"></td></tr>
+<tr><td><input value="ULTIMATE Spicy"></td><td><input value="4615"></td></tr>
+</table>
+
+<!-- Report Data -->
+<h3>3️⃣ Inventory / Report</h3>
+<table id="repTable">
+<tr><th>Item</th><th>Qty Sold</th></tr>
+<tr><td><input value="MIX MEAL"></td><td><input value="65"></td></tr>
+<tr><td><input value="ULTIMATE"></td><td><input value="1014"></td></tr>
+</table>
+
+<button onclick="compare()">🔍 Compare</button>
+
+<!-- Result -->
+<h3>4️⃣ Result</h3>
+<table id="resultTable">
+<tr><th>Unified Item</th><th>POS Qty</th><th>Report Qty</th><th>Difference</th></tr>
+</table>
+
+<script>
+function getTableData(tableId) {
+  const rows = document.querySelectorAll(`#${tableId} tr`);
+  let data = [];
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i].querySelectorAll("input");
+    if (cells.length === 2) {
+      data.push({ name: cells[0].value.trim(), qty: parseFloat(cells[1].value) || 0 });
+    }
+  }
+  return data;
+}
+
+function compare() {
+  const mapping = getTableData("mapTable");
+  const pos = getTableData("posTable");
+  const rep = getTableData("repTable");
+
+  let unifiedPOS = {};
+
+  pos.forEach(p => {
+    let map = mapping.find(m => m.name === p.name);
+    let unified = map ? map.qty || map.name && map.qty === undefined ? map.name : map.name : p.name;
+    unifiedPOS[unified] = (unifiedPOS[unified] || 0) + p.qty;
+  });
+
+  const result = document.getElementById("resultTable");
+  result.innerHTML = "<tr><th>Unified Item</th><th>POS Qty</th><th>Report Qty</th><th>Difference</th></tr>";
+
+  Object.keys(unifiedPOS).forEach(item => {
+    let r = rep.find(x => x.name === item);
+    let repQty = r ? r.qty : 0;
+    let diff = unifiedPOS[item] - repQty;
+
+    let cls = diff === 0 ? "ok" : Math.abs(diff) <= 5 ? "warn" : "bad";
+
+    result.innerHTML += `
+      <tr class="${cls}">
+        <td>${item}</td>
+        <td>${unifiedPOS[item]}</td>
+        <td>${repQty}</td>
+        <td>${diff}</td>
+      </tr>`;
+  });
+}
+</script>
+
+</body>
+</html>
