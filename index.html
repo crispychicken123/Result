@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Reconciliation (Ultimate Edition - FIXED)</title>
+    <title>Enterprise Reconciliation (PRO Edition V2)</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SheetJS (Excel Reader) -->
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
             --secondary: #64748b;
             --success: #10b981;
             --danger: #ef4444;
@@ -22,8 +22,19 @@
             --bg-body: #f1f5f9;
             --bg-card: #ffffff;
             --border: #e2e8f0;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-muted: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
         }
 
         body { 
@@ -32,6 +43,7 @@
             margin: 0; padding: 0; 
             color: var(--text-main); 
             line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
@@ -40,87 +52,106 @@
         .card {
             background: var(--bg-card);
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: var(--shadow-md);
             border: 1px solid var(--border);
             padding: 24px;
             margin-bottom: 24px;
+            transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
         }
+        .card:hover { transform: translateY(-2px); }
 
         /* --- Header --- */
         header { 
             display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 30px; 
+            margin-bottom: 25px; 
         }
-        .header-title h1 { margin: 0; font-size: 24px; font-weight: 700; color: var(--text-main); }
-        .header-title span { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+        .header-title h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; }
+        .header-title span { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Branch Selector */
-        .branch-selector { display: flex; align-items: center; gap: 12px; background: white; padding: 8px 16px; border-radius: 50px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        /* Branch Selector & Tools */
+        .header-tools { display: flex; gap: 15px; align-items: center; }
+        .branch-selector { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 6px 20px; border-radius: 50px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
         .branch-selector select { 
-            border: none; font-size: 15px; font-weight: 600; color: var(--primary-dark); 
-            background: transparent; outline: none; cursor: pointer; 
+            border: none; font-size: 15px; font-weight: 700; color: var(--primary-dark); 
+            background: transparent; outline: none; cursor: pointer; appearance: none;
+            padding-right: 20px; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CBF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%2024%2024h-44.8a17.6%2017.6%200%200%2024-24v128c0%2020.7-13.4%2038-32.2%2038-56.2v-46.8c0-22-14.2-37.9-32.8-58.2zm0%20116.8c-24.6-5.7-50.8-16.3-76.1-29.7l-40.3-33.6c-10.2-8.5-19.7-19.6-29.3-32.4-35.7-21.6-8.2-44.4-16.2-65.8-23.1-38.1-12.9-58.1-26.5-63.2-42.9-6.2-12.4-22.8-26-60.2-32.5-41.6-5.1-14.9-15.2-23.2-24.2-32.8-33.6-15.4-12.4-22.8-26-36.2-29.7-36.2-15.4-12.4-22.8-26-51.1-29.7-76.1-16.3-25.4-5.7-76.1-29.7-32.8%229.4%20248.4z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 10px; 
         }
 
+        /* Dark Mode Toggle */
+        .theme-toggle { cursor: pointer; background: var(--bg-card); padding: 8px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+        .theme-toggle:hover { background: var(--border); }
+
         /* --- KPI Area --- */
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
-        .kpi-card { background: white; padding: 20px; border-radius: 10px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .kpi-card.blue { border-left: 4px solid var(--primary); }
-        .kpi-card.green { border-left: 4px solid var(--success); }
-        .kpi-card.red { border-left: 4px solid var(--danger); }
-        .kpi-card.orange { border-left: 4px solid var(--warning); }
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 24px; }
+        .kpi-card { background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .kpi-card::before { content:''; position: absolute; top:0; left:0; width:4px; height:100%; }
+        .kpi-card.blue::before { background: var(--primary); }
+        .kpi-card.green::before { background: var(--success); }
+        .kpi-card.red::before { background: var(--danger); }
+        .kpi-card.orange::before { background: var(--warning); }
+        .kpi-card.purple::before { background: #8b5cf6; } /* New for Health Score */
         
-        .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
-        .kpi-value { font-size: 28px; font-weight: 700; margin: 8px 0; color: var(--text-main); }
-        .kpi-sub { font-size: 12px; color: var(--text-muted); }
+        .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; }
+        .kpi-value { font-size: 28px; font-weight: 800; margin: 5px 0; color: var(--text-main); }
+        .kpi-sub { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: auto; }
 
         /* --- Charts Section --- */
         .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
         .chart-container { position: relative; height: 300px; width: 100%; }
 
         /* --- Action Bar --- */
-        .actions { display: flex; gap: 12px; margin-bottom: 20px; }
+        .actions { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .btn { 
-            padding: 10px 16px; border-radius: 8px; font-weight: 500; font-size: 14px; 
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; 
             cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; 
-            transition: all 0.2s; 
+            transition: all 0.2s; box-shadow: var(--shadow-sm);
         }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); border-color: var(--text-muted); }
         .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
+        .btn-purple { background: #8b5cf6; color: white; } /* New Demo Button */
+
+        /* --- Toggle Switch --- */
+        .toggle-switch { display: flex; align-items: center; gap: 10px; margin-left: auto; cursor: pointer; }
+        .toggle-input { display: none; }
+        .toggle-label { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        .toggle-slider { width: 44px; height: 24px; background: var(--border); border-radius: 24px; position: relative; transition: 0.3s; margin-left: 10px; }
+        .toggle-slider::before { content:''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        input:checked + .toggle-slider { background: var(--primary); }
+        input:checked + .toggle-slider::before { transform: translateX(20px); }
 
         /* --- Matrix --- */
         .matrix-table { width: 100%; border-collapse: collapse; }
-        .matrix-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+        .matrix-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; }
         .matrix-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        .matrix-row { cursor: pointer; transition: background 0.15s; }
-        .matrix-row:hover { background-color: #f1f5f9; }
-        .matrix-row.active { background-color: #eff6ff; border-left: 3px solid var(--primary); }
+        .matrix-row { cursor: pointer; transition: background 0.1s; border-radius: 4px; }
+        .matrix-row:hover { background-color: var(--bg-body); }
+        .matrix-row.active { background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); }
 
         /* --- Main Table --- */
-        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         thead th { 
-            background: #f8fafc; color: var(--text-muted); font-weight: 600; text-align: left; padding: 12px 16px; 
+            background: var(--bg-body); color: var(--text-muted); font-weight: 700; text-align: left; padding: 12px 16px; 
             border-bottom: 1px solid var(--border); 
             position: sticky; top: 0; z-index: 10; 
         }
-        tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tbody tr:hover { background-color: #f8fafc; }
+        tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
+        tbody tr:hover { background-color: var(--bg-body); }
         
         .editable-cell { 
-            background: #fff; border: 1px solid transparent; border-radius: 4px; padding: 4px 8px; 
-            font-family: 'Menlo', 'Monaco', monospace; font-weight: 600; color: var(--text-main); 
-            cursor: text; min-width: 60px; text-align: center; display: inline-block;
+            background: var(--bg-body); border: 1px solid transparent; border-radius: 4px; padding: 6px 10px; 
+            font-family: 'Menlo', 'Monaco', monospace; font-weight: 600; color: var(--primary-dark); 
+            cursor: text; min-width: 60px; text-align: center; display: inline-block; transition: all 0.2s;
         }
-        .editable-cell:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .editable-cell:hover { border-color: #cbd5e1; }
+        .editable-cell:focus { background: var(--bg-card); outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .editable-cell:hover { border-color: var(--text-muted); background: var(--bg-card); }
 
         .diff-pos { color: var(--success); font-weight: 700; }
         .diff-neg { color: var(--danger); font-weight: 700; }
-        .diff-zero { color: var(--secondary); font-weight: 600; }
+        .diff-zero { color: var(--text-muted); font-weight: 600; }
 
         /* --- Config / Inputs --- */
         .config-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
@@ -128,32 +159,50 @@
         .input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .input-header h3 { margin: 0; font-size: 16px; color: var(--text-main); }
         
-        .file-drop { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; background: #f8fafc; transition: border 0.2s; position: relative; }
-        .file-drop:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-drop { border: 2px dashed var(--border); border-radius: 8px; padding: 30px; text-align: center; background: var(--bg-body); transition: all 0.2s; position: relative; }
+        .file-drop:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); transform: scale(1.01); }
+        .file-drop.dragging { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
         .file-drop input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
         textarea { 
-            width: 100%; height: 80px; border: 1px solid var(--border); border-radius: 6px; 
-            padding: 10px; font-family: monospace; font-size: 12px; resize: vertical; 
-            margin-top: 10px; background: #fff; box-sizing: border-box;
+            width: 100%; height: 70px; border: 1px solid var(--border); border-radius: 6px; 
+            padding: 12px; font-family: 'Menlo', monospace; font-size: 12px; resize: vertical; 
+            margin-top: 10px; background: var(--bg-card); color: var(--text-main); box-sizing: border-box; transition: border 0.2s;
         }
+        textarea:focus { border-color: var(--primary); outline: none; }
 
         /* --- Modal --- */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal { background: white; width: 800px; border-radius: 12px; padding: 30px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal { background: var(--bg-card); width: 800px; border-radius: 16px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; color: var(--text-main); }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { 
+            background: var(--bg-card); border-left: 4px solid var(--primary); padding: 16px 20px; 
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            font-weight: 500; font-size: 14px; opacity: 0; transform: translateX(50px); 
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 12px; color: var(--text-main);
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.info { border-color: var(--primary); }
 
         /* --- Utilities --- */
-        .search-bar { width: 300px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; }
-        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #475569; font-weight: 600; }
+        .search-bar { width: 300px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; transition: border 0.2s; background: var(--bg-card); color: var(--text-main); }
+        .search-bar:focus { border-color: var(--primary); outline: none; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--border); color: var(--text-muted); font-weight: 700; }
 
         @media print {
-            .actions, .config-section, .file-drop, .btn, .branch-selector, .charts-section { display: none !important; }
+            .actions, .config-section, .file-drop, .btn, .branch-selector, .charts-section, #toast-container, .header-tools { display: none !important; }
             body, .container { background: white; max-width: 100%; margin: 0; padding: 0; }
+            body.dark-mode { background: white; color: black; }
             .card { box-shadow: none; border: none; padding: 0; margin: 0; }
             table { border: 1px solid #ccc; }
             th, td { border: 1px solid #ccc; }
             .editable-cell { border: none; }
+            .kpi-card { border: 1px solid #ccc; }
         }
     </style>
 </head>
@@ -164,24 +213,32 @@
     <!-- HEADER -->
     <header>
         <div class="header-title">
-            <h1>Enterprise Reconciliation</h1>
-            <span>Stock & Sales Variance Tool with Analytics</span>
+            <h1>Recon Pro <span style="color:var(--primary)">V2</span></h1>
+            <span>Enterprise Stock & Sales Analytics</span>
         </div>
         
-        <div class="branch-selector">
-            <label for="branchSelect" style="font-size:14px; color:var(--text-muted); font-weight:600;">Branch:</label>
-            <select id="branchSelect" class="branch-select" onchange="switchBranch()">
-                <option value="">-- Select Branch --</option>
-                <option value="Hamdan St">Crispy Chicken Hamdan St</option>
-                <option value="Khaldia">Crispy Chicken Khaldia</option>
-                <option value="Shabiya 11">Crispy Chicken Shabiya 11</option>
-                <option value="Muroor">Crispy Chicken Muroor</option>
-                <option value="Al Electra">Crispy Chicken Al Electra</option>
-                <option value="Al Barsha">Crispy Chicken Al Barsha</option>
-                <option value="Al Satwa">Crispy Chicken Al Satwa</option>
-                <option value="Al Rigga">Crispy Chicken Al Rigga</option>
-                <option value="Al Majaz">Crispy Chicken Al Majaz</option>
-            </select>
+        <div class="header-tools">
+            <!-- Dark Mode Toggle -->
+            <div class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                🌗
+            </div>
+
+            <!-- UPDATED BRANCH LIST -->
+            <div class="branch-selector">
+                <label for="branchSelect" style="font-size:14px; color:var(--text-muted); font-weight:700;">Branch:</label>
+                <select id="branchSelect" class="branch-select" onchange="switchBranch()">
+                    <option value="">-- Select Branch --</option>
+                    <option value="Hamdan St">Crispy Chicken Hamdan St</option>
+                    <option value="Khaldia">Crispy Chicken Khaldia</option>
+                    <option value="Shabiya 11">Crispy Chicken Shabiya 11</option>
+                    <option value="Muroor">Crispy Chicken Muroor</option>
+                    <option value="Al Electra">Crispy Chicken Al Electra</option>
+                    <option value="Al Barsha">Crispy Chicken Al Barsha</option>
+                    <option value="Al Satwa">Crispy Chicken Al Satwa</option>
+                    <option value="Al Rigga">Crispy Chicken Al Rigga</option>
+                    <option value="Al Majaz">Crispy Chicken Al Majaz</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -207,21 +264,26 @@
             <div class="kpi-value" id="kpi-acc">100%</div>
             <div class="kpi-sub">Volume Match Rate</div>
         </div>
+        <div class="kpi-card purple">
+            <div class="kpi-label">Health Score</div>
+            <div class="kpi-value" id="kpi-health" style="color:#8b5cf6">A+</div>
+            <div class="kpi-sub">Inventory Integrity</div>
+        </div>
     </div>
 
-    <!-- NEW: CHARTS SECTION -->
+    <!-- CHARTS SECTION -->
     <div class="card charts-section">
         <div class="charts-grid">
             <!-- Chart 1: Volume Comparison -->
             <div>
-                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Volume Comparison (REST vs POS)</h3>
+                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Volume Comparison</h3>
                 <div class="chart-container">
                     <canvas id="volumeChart"></canvas>
                 </div>
             </div>
             <!-- Chart 2: Top 10 Variances -->
             <div>
-                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Top 10 Item Variances (Absolute)</h3>
+                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Top 10 Variances (Absolute)</h3>
                 <div class="chart-container">
                     <canvas id="varianceChart"></canvas>
                 </div>
@@ -232,8 +294,8 @@
     <!-- COMPARISON MATRIX -->
     <div class="card" style="padding: 15px 24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:16px;">📊 Branch Comparison Matrix</h3>
-            <span style="font-size:12px; color:var(--text-muted);">Click a row to load data</span>
+            <h3 style="margin:0; font-size:16px;">Branch Comparison Matrix</h3>
+            <span style="font-size:12px; color:var(--text-muted);">Click row to restore data</span>
         </div>
         <table class="matrix-table">
             <thead>
@@ -257,11 +319,18 @@
     <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; font-size:18px;">Item Reconciliation</h3>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="searchInput" class="search-bar" placeholder="Search items...">
+            <div style="display:flex; gap:15px; align-items:center;">
+                <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search items...">
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="varianceOnlyFilter" class="toggle-input" onchange="renderTable()">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Variances Only</span>
+                </label>
+
                 <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
                 <button class="btn btn-primary" onclick="generateReport()">📄 Report</button>
-                <button class="btn btn-success" onclick="addToMatrix()">💾 Save to Matrix</button>
+                <button class="btn btn-success" onclick="addToMatrix()">💾 Save</button>
             </div>
         </div>
 
@@ -283,20 +352,26 @@
 
     <!-- INPUT CONFIGURATION SECTION -->
     <div class="card config-section">
-        <h3 style="margin-top:0; border-bottom:1px solid var(--border); padding-bottom:10px;">Data Configuration</h3>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <h3 style="margin:0; color:var(--text-main);">Data Configuration</h3>
+            <div style="display:flex; gap: 10px;">
+                <button class="btn btn-danger" onclick="clearAllData()" style="font-size:12px; padding:8px 16px;">🗑️ Clear Data</button>
+                <button class="btn btn-purple" onclick="loadDemoData()" style="font-size:12px; padding:8px 16px;">🚀 Load Demo Data</button>
+            </div>
+        </div>
         
         <!-- Master Data -->
         <div class="input-section">
             <div class="input-header">
-                <h3>📘 1. Standard Item List (Master Data)</h3>
-                <button class="btn btn-warning" onclick="loadProvidedList()" style="font-size:12px; padding:6px 12px;">Load Clean List</button>
+                <h3>📘 1. Master List</h3>
+                <button class="btn btn-outline" onclick="loadProvidedList()" style="font-size:12px; padding:6px 12px;">Load Clean List</button>
             </div>
             <div class="file-drop">
                 <span class="tag">Upload Excel</span>
                 <input type="file" accept=".xlsx, .xls" onchange="uploadExcel(this, 'master')">
                 <span style="font-size:12px; color:var(--text-muted);">Drop Master List File Here</span>
             </div>
-            <textarea id="inputMASTER" placeholder="Paste Master Item List (One item per line)..."></textarea>
+            <textarea id="inputMASTER" placeholder="Paste Master Item List..."></textarea>
         </div>
 
         <!-- Sales Data -->
@@ -324,9 +399,11 @@
                     <textarea id="inputPOS" placeholder="Paste POS Data (Name | Qty)..."></textarea>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="processData()" style="margin-top:15px; width:100%; justify-content:center;">Process & Calculate</button>
         </div>
     </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
 
 </div>
 
@@ -337,22 +414,22 @@
         <p id="reportMeta" style="color:var(--text-muted); margin-bottom:20px;">Branch: ... | Date: ...</p>
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
-            <div style="background:#f1f5f9; padding:15px; border-radius:8px;">
-                <div style="font-size:12px; color:var(--text-muted); font-weight:600;">VARIANCE COUNT</div>
-                <div id="rptVariance" style="font-size:24px; font-weight:700; color:var(--danger);">0</div>
+            <div style="background:var(--bg-body); padding:15px; border-radius:8px; text-align:center;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">VARIANCE COUNT</div>
+                <div id="rptVariance" style="font-size:28px; font-weight:800; color:var(--danger);">0</div>
             </div>
-            <div style="background:#f1f5f9; padding:15px; border-radius:8px;">
-                <div style="font-size:12px; color:var(--text-muted); font-weight:600;">MATCHED ITEMS</div>
-                <div id="rptMatched" style="font-size:24px; font-weight:700; color:var(--success);">0</div>
+            <div style="background:var(--bg-body); padding:15px; border-radius:8px; text-align:center;">
+                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">MATCHED ITEMS</div>
+                <div id="rptMatched" style="font-size:28px; font-weight:800; color:var(--success);">0</div>
             </div>
         </div>
         
         <!-- Variance Table -->
-        <div style="border-top: 1px solid #e2e8f0; margin-top: 15px; padding-top: 15px;">
+        <div style="border-top: 1px solid var(--border); margin-top: 15px; padding-top: 15px;">
             <h3 style="font-size:16px; margin: 0 0 10px 0;">📋 Item Variance Details</h3>
-            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px;">
                 <table class="matrix-table" style="font-size:12px;">
-                    <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 5;">
+                    <thead style="position: sticky; top: 0; background: var(--bg-body); z-index: 5;">
                         <tr>
                             <th>Item Name</th>
                             <th style="text-align:center">REST</th>
@@ -367,7 +444,7 @@
 
         <div style="text-align:right; margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
             <button class="btn btn-outline" onclick="closeReport()" style="float:left;">Close</button>
-            <button class="btn btn-warning" onclick="downloadReportCSV()">⬇️ Download Excel/CSV</button>
+            <button class="btn btn-outline" onclick="downloadReportCSV()">⬇️ Download CSV</button>
             <button class="btn btn-success" onclick="copyReport()">Copy Text</button>
         </div>
     </div>
@@ -608,6 +685,53 @@ Without Sause
 Without Terky
 Without Tomato`;
 
+// Demo Data extracted from prompt (Mockup for REST vs POS)
+const DEMO_POS_DATA = `Item | Qty Sold
+ULTIMATE Spicy | 47404
+Daily Spicy Meal | 60539
+Daily Original Meal | 35998
+Ultimate S Noon Offers | 10369
+Daily Spicy Meal Noon | 22176
+DAILY OFFER Spicy Meal | 5468
+DAILY OFFER Original Meal | 4850
+SUPER MEAL Original | 3424
+SUPER MEAL Spicy | 3060
+SAVING MEAL Original | 3385
+SAVING MEAL Spicy | 3325
+Daily MIX Meal | 4514
+Daily MIX Meal Noon | 4403
+Daily Original Meal Noon | 4394
+BUCKET MEAL Spicy | 1093
+IDEAL MEAL Original | 765
+SUPER MEAL - MIX | 1214
+DAILY OFFER Original Mea | 1338
+IDEAL MEAL Spicy | 663
+DAILY OFFER MIX Meal | 1372
+TWIN BEEF BURGER | 2056`;
+
+const DEMO_REST_DATA = `Item | Qty
+ULTIMATE Spicy | 47500
+Daily Spicy Meal | 60300
+Daily Original Meal | 36000
+Ultimate S Noon Offers | 10300
+Daily Spicy Meal Noon | 22150
+DAILY OFFER Spicy Meal | 5400
+DAILY OFFER Original Meal | 4850
+SUPER MEAL Original | 3400
+SUPER MEAL Spicy | 3000
+SAVING MEAL Original | 3385
+SAVING MEAL Spicy | 3325
+Daily MIX Meal | 4514
+Daily MIX Meal Noon | 4403
+Daily Original Meal Noon | 4394
+BUCKET MEAL Spicy | 1093
+IDEAL MEAL Original | 765
+SUPER MEAL - MIX | 1214
+DAILY OFFER Original Mea | 1338
+IDEAL MEAL Spicy | 663
+DAILY OFFER MIX Meal | 1372
+TWIN BEEF BURGER | 2056`;
+
 // --- 2. GLOBAL STATE ---
 const state = {
     masterData: [],
@@ -617,52 +741,48 @@ const state = {
     currentBranch: "",
     matrix: [],
     
-    // !!! CUSTOMIZE MAPPINGS HERE !!!
-    // Add entries here if "REST" names do not match "Master/POS" names
     mapping: {
         "daily spicy meal noon": "Daily Spicy Meal",
         "daily spicy meal": "Daily Spicy Meal",
         "**spicy fries**": "Spicy - FRIES",
         "**not spicy fries**": "FRENCH FRIES SMALL",
         "extra chesses": "EXTRA CHEESE",
-        // Add more: "bad name": "Good Name"
     }
 };
 
-// Global Chart Instances
 let volumeChartInstance = null;
 let varianceChartInstance = null;
 
-// --- 3. STORAGE ---
+// --- 3. DARK MODE ---
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+// --- 4. STORAGE & PARSING ---
 const getStorageKey = (type, branch) => `RECON_${type}_${branch}`;
 const loadData = (type, branch) => localStorage.getItem(getStorageKey(type, branch));
 const saveData = (type, branch, text) => localStorage.setItem(getStorageKey(type, branch), text);
 
-// --- 4. PARSING ---
 function parseText(rawText) {
     if (!rawText) return [];
     const rows = [];
     const lines = rawText.split('\n');
     for (let line of lines) {
         if (!line.trim()) continue;
-        
         const parts = line.split('|').map(p => p.trim());
         let name = "Unknown";
         let qty = 0;
 
-        // Single Column (Master List) OR Header check
         if (parts.length === 1 && parts[0].length > 0 && !line.includes("Total Item Sales")) {
             name = parts[0];
             qty = 0;
         } else {
-            // Multi Column (Sales Data)
             parts.forEach(p => {
                 const val = parseInt(p);
                 if (!isNaN(val)) { qty = val; }
                 else if (p.length > 1 && p !== "HEAD") { name = p; }
             });
         }
-
         if (name !== "Unknown" && name !== "HEAD") {
             rows.push({ name, qty: isNaN(qty) ? 0 : qty });
         }
@@ -670,15 +790,31 @@ function parseText(rawText) {
     return rows;
 }
 
-// --- 5. ROBUST UPLOAD FUNCTION (FIXED FOR USER) ---
+// --- 5. TOAST SYSTEM ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    let icon = 'ℹ️';
+    if(type === 'success') icon = '✅';
+    if(type === 'error') icon = '❌';
+    toast.innerHTML = `<span>${icon}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('show'); }, 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+// --- 6. SMART EXCEL UPLOAD ---
 async function uploadExcel(input, type) {
     const file = input.files[0];
     if (!file) return;
     
-    // UI Feedback
     input.parentElement.style.borderColor = "var(--primary)";
-    input.parentElement.style.background = "#eff6ff";
-    input.parentElement.querySelector('span:last-child').innerText = "Reading file...";
+    input.parentElement.style.background = "var(--bg-body)";
+    input.parentElement.querySelector('span:last-child').innerText = "Reading...";
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -686,45 +822,30 @@ async function uploadExcel(input, type) {
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, {type: 'array'});
             
-            // Check if there are sheets
             if (workbook.SheetNames.length === 0) {
-                alert("Error: Excel file is empty.");
+                showToast("Excel file is empty!", "error");
                 return;
             }
-
             const firstSheetName = workbook.SheetNames[0];
             const firstSheet = workbook.Sheets[firstSheetName];
-            
-            // Try to convert to JSON
             const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
             if (jsonData.length === 0) {
-                alert("Error: No data rows found in the first sheet. Please check if Row 1 contains headers.");
-                input.parentElement.querySelector('span:last-child').innerText = "Empty File";
+                showToast("No data found in Excel!", "error");
                 return;
             }
-
-            // --- DEBUGGING: Alert headers ---
-            const firstRowKeys = Object.keys(jsonData[0]);
-            console.log("Excel Headers Found:", firstRowKeys);
-            // alert("Headers found: " + firstRowKeys.join(", ")); // Uncomment to see headers on screen
 
             const parsed = [];
             jsonData.forEach(row => {
                 const keys = Object.keys(row);
                 
-                // 1. Try Standard Search (Case Insensitive)
-                let nameKey = keys.find(k => k.toLowerCase().includes('name') || k.toLowerCase().includes('item'));
-                let qtyKey = keys.find(k => k.toLowerCase().includes('qty') || k.toLowerCase().includes('quantity') || k.toLowerCase().includes('sold'));
+                // SMART DETECTION FOR HEADERS
+                let nameKey = keys.find(k => k.toLowerCase().includes('item') || k.toLowerCase().includes('name') || k.toLowerCase().includes('description'));
+                let qtyKey = keys.find(k => k.toLowerCase().includes('qty') || k.toLowerCase().includes('quantity') || k.toLowerCase().includes('sold') || k.toLowerCase().includes('count'));
 
-                // 2. FALLBACK: If standard search fails, Guess based on Value Types
-                // Assume 1st column is Name, 1st numeric column is Qty
-                if (!nameKey) {
-                    nameKey = keys[0]; 
-                }
-                if (!qtyKey) {
-                    qtyKey = keys.find(k => typeof row[k] === 'number' && k !== nameKey);
-                }
+                // Fallback: Guess based on Value Types
+                if (!nameKey) nameKey = keys[0]; 
+                if (!qtyKey) qtyKey = keys.find(k => typeof row[k] === 'number' && k !== nameKey);
 
                 if (nameKey) {
                     parsed.push({
@@ -735,46 +856,60 @@ async function uploadExcel(input, type) {
             });
 
             if (parsed.length === 0) {
-                alert("Could not find valid data columns. Please check your headers.");
-                input.parentElement.querySelector('span:last-child').innerText = "Error";
+                showToast("Could not parse Excel columns.", "error");
                 return;
             }
 
-            // Update State and UI
             const textArea = type === 'master' ? document.getElementById('inputMASTER') : (type === 'rest' ? document.getElementById('inputREST' ) : document.getElementById('inputPOS'));
-            
             textArea.value = `[Loaded ${parsed.length} items from ${file.name}]`;
             
             if(type === 'master') state.masterData = parsed;
             else if(type === 'rest') state.restData = parsed;
             else if(type === 'pos') state.posData = parsed;
             
-            // Trigger Processing
             processData();
+            showToast(`${parsed.length} items loaded successfully!`, "success");
             
-            // Reset UI Text
             input.parentElement.querySelector('span:last-child').innerText = "File Loaded ✅";
 
         } catch (error) {
             console.error(error);
-            alert("Error reading Excel file: " + error.message);
+            showToast("Error reading file: " + error.message, "error");
             input.parentElement.querySelector('span:last-child').innerText = "Error";
         }
     };
     reader.readAsArrayBuffer(file);
 }
 
-// --- 6. CHART UPDATE LOGIC ---
+// --- 7. DEMO DATA LOADER ---
+function loadDemoData() {
+    document.getElementById('branchSelect').value = "Demo Branch";
+    state.currentBranch = "Demo Branch";
+    
+    document.getElementById('inputMASTER').value = PROVIDED_MASTER_DATA;
+    document.getElementById('inputREST').value = DEMO_REST_DATA;
+    document.getElementById('inputPOS').value = DEMO_POS_DATA;
+
+    state.masterData = parseText(PROVIDED_MASTER_DATA);
+    state.restData = parseText(DEMO_REST_DATA);
+    state.posData = parseText(DEMO_POS_DATA);
+    
+    processData();
+    showToast("Demo Data Loaded Successfully!", "success");
+}
+
+// --- 8. CHARTS & KPI ---
 function updateDashboardCharts() {
     if(state.results.length === 0) return;
-
-    // 1. Volume Comparison Chart (Bar)
     const totalRest = parseInt(document.getElementById('kpi-rest').innerText.replace(/,/g, ''));
     const totalPos = parseInt(document.getElementById('kpi-pos').innerText.replace(/,/g, ''));
     
-    const ctx1 = document.getElementById('volumeChart').getContext('2d');
+    // Destroy old charts
     if(volumeChartInstance) volumeChartInstance.destroy();
-    
+    if(varianceChartInstance) varianceChartInstance.destroy();
+
+    // Volume Chart
+    const ctx1 = document.getElementById('volumeChart').getContext('2d');
     volumeChartInstance = new Chart(ctx1, {
         type: 'bar',
         data: {
@@ -782,22 +917,17 @@ function updateDashboardCharts() {
             datasets: [{
                 label: 'Volume',
                 data: [totalRest, totalPos],
-                backgroundColor: ['#2563eb', '#10b981'],
-                borderWidth: 1
+                backgroundColor: ['#3b82f6', '#10b981'],
+                borderRadius: 6,
+                borderWidth: 0
             }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
     });
 
-    // 2. Top 10 Variance Chart (Horizontal Bar)
-    // Sort by absolute difference
-    const topVariances = [...state.results]
-        .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))
-        .slice(0, 10);
-
+    // Variance Chart
+    const topVariances = [...state.results].sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 10);
     const ctx2 = document.getElementById('varianceChart').getContext('2d');
-    if(varianceChartInstance) varianceChartInstance.destroy();
-
     varianceChartInstance = new Chart(ctx2, {
         type: 'bar',
         data: {
@@ -806,7 +936,8 @@ function updateDashboardCharts() {
                 label: 'Variance',
                 data: topVariances.map(r => r.d),
                 backgroundColor: topVariances.map(r => r.d < 0 ? '#ef4444' : '#f59e0b'),
-                borderWidth: 1
+                borderRadius: 4,
+                borderWidth: 0
             }]
         },
         options: {
@@ -818,72 +949,18 @@ function updateDashboardCharts() {
     });
 }
 
-// --- 7. ACTIONS ---
-
-function loadProvidedList() {
-    document.getElementById('inputMASTER').value = PROVIDED_MASTER_DATA;
-    processData();
-    alert("Clean List Loaded Successfully!");
+function calculateHealthScore(totalRest, netDiff) {
+    if (totalRest === 0) return "N/A";
+    const varianceRate = Math.abs(netDiff) / totalRest;
+    
+    if (varianceRate === 0) return "A+";
+    if (varianceRate < 0.005) return "A";
+    if (varianceRate < 0.01) return "B";
+    if (varianceRate < 0.02) return "C";
+    return "F";
 }
 
-function switchBranch() {
-    const select = document.getElementById('branchSelect');
-    const branch = select.value;
-    state.currentBranch = branch;
-
-    if (!branch) return; 
-
-    const savedRest = loadData('REST', branch);
-    const savedPos = loadData('POS', branch);
-    const savedMaster = loadData('MASTER', branch);
-
-    document.getElementById('inputREST').value = savedRest || "";
-    document.getElementById('inputPOS').value = savedPos || "";
-    document.getElementById('inputMASTER').value = savedMaster || "";
-
-    if (savedRest || savedPos) {
-        state.restData = savedRest ? parseText(savedRest) : [];
-        state.posData = savedPos ? parseText(savedPos) : [];
-        state.masterData = savedMaster ? parseText(savedMaster) : [];
-        processData();
-    } else {
-        state.restData = [];
-        state.posData = [];
-        state.masterData = [];
-        updateKPIs(0, 0);
-        document.getElementById('dataTableBody').innerHTML = "";
-    }
-    renderMatrix();
-}
-
-function addToMatrix() {
-    if (!state.currentBranch) { alert("Please select a branch first."); return; }
-
-    const totalItems = state.results.length;
-    const totalRest = parseInt(document.getElementById('kpi-rest').innerText.replace(/,/g, ''));
-    const totalPos = parseInt(document.getElementById('kpi-pos').innerText.replace(/,/g, ''));
-    const diff = totalPos - totalRest;
-    const acc = document.getElementById('kpi-acc').innerText;
-
-    const existingIndex = state.matrix.findIndex(m => m.branch === state.currentBranch);
-    if (existingIndex > -1) {
-        state.matrix[existingIndex] = { branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc };
-    } else {
-        state.matrix.push({ branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc });
-    }
-    renderMatrix();
-    alert("✅ Saved to Matrix!");
-}
-
-function loadFromMatrix(branchName) {
-    const select = document.getElementById('branchSelect');
-    select.value = branchName;
-    switchBranch();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// --- 8. CORE LOGIC ---
-
+// --- 9. CORE LOGIC ---
 function processData() {
     const masterText = document.getElementById('inputMASTER').value;
     const restText = document.getElementById('inputREST').value;
@@ -899,7 +976,6 @@ function processData() {
         saveData('MASTER', state.currentBranch, document.getElementById('inputMASTER').value);
     }
 
-    // Normalize Names
     const nameStandardizer = {};
     state.masterData.forEach(item => {
         nameStandardizer[item.name.toLowerCase().trim()] = item.name; 
@@ -947,12 +1023,8 @@ function processData() {
 
     updateKPIs(totalRest, totalPos);
     renderTable();
-    
-    // UPDATE CHARTS
     updateDashboardCharts();
 }
-
-// --- 9. RENDERERS ---
 
 function updateKPIs(totalRest, totalPos) {
     document.getElementById('kpi-rest').innerText = totalRest.toLocaleString();
@@ -965,12 +1037,20 @@ function updateKPIs(totalRest, totalPos) {
 
     const accuracy = totalRest === 0 ? 100 : ((1 - Math.abs(netDiff) / totalRest) * 100);
     document.getElementById('kpi-acc').innerText = accuracy.toFixed(1) + "%";
+
+    // Update Health Score
+    const healthScore = calculateHealthScore(totalRest, netDiff);
+    const healthElem = document.getElementById('kpi-health');
+    healthElem.innerText = healthScore;
+    if(healthScore === "A+" || healthScore === "A") healthElem.style.color = "var(--success)";
+    else if(healthScore === "B") healthElem.style.color = "var(--warning)";
+    else healthElem.style.color = "var(--danger)";
 }
 
+// --- 10. UI RENDERERS ---
 function renderMatrix() {
     const tbody = document.getElementById('matrixBody');
     tbody.innerHTML = "";
-
     state.matrix.forEach((m, index) => {
         const tr = document.createElement('tr');
         tr.className = "matrix-row";
@@ -992,21 +1072,21 @@ function renderMatrix() {
             <td>${m.pos.toLocaleString()}</td>
             <td class="${diffClass}">${m.diff}</td>
             <td>${m.acc}</td>
-            <td><button style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:600;" onclick="removeMatrix(${index})">Remove</button></td>
+            <td><button style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:600;" onclick="removeMatrix(${index})">Remove</button></td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-function removeMatrix(index) {
-    state.matrix.splice(index, 1);
-    renderMatrix();
-}
-
 function renderTable() {
     const tbody = document.getElementById('dataTableBody');
     tbody.innerHTML = "";
+    
+    const showVarianceOnly = document.getElementById('varianceOnlyFilter').checked;
+
     state.results.forEach((r, index) => {
+        if (showVarianceOnly && r.d === 0) return;
+
         let diffClass = "diff-zero";
         if (r.d > 0) diffClass = "diff-pos";
         if (r.d < 0) diffClass = "diff-neg";
@@ -1042,24 +1122,112 @@ function updateCell(index, type, element) {
     let tRest = 0, tPos = 0;
     state.results.forEach(x => { tRest += x.r; tPos += x.p; });
     updateKPIs(tRest, tPos);
-    updateDashboardCharts(); // Refresh charts on edit
+    updateDashboardCharts();
 }
 
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const filter = this.value.toUpperCase();
-    const rows = document.getElementById('dataTableBody').getElementsByTagName('tr');
-    for (let i = 0; i < rows.length; i++) {
-        const td = rows[i].getElementsByTagName('td')[0]; 
-        if (td) {
-            const txtValue = td.textContent || td.innerText;
-            rows[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? "" : "none";
-        }
+// --- 11. UTILS & ACTIONS ---
+function loadProvidedList() {
+    document.getElementById('inputMASTER').value = PROVIDED_MASTER_DATA;
+    processData();
+    showToast("Clean List Loaded Successfully!", "success");
+}
+
+function switchBranch() {
+    const select = document.getElementById('branchSelect');
+    const branch = select.value;
+    state.currentBranch = branch;
+
+    if (!branch) return; 
+
+    const savedRest = loadData('REST', branch);
+    const savedPos = loadData('POS', branch);
+    const savedMaster = loadData('MASTER', branch);
+
+    document.getElementById('inputREST').value = savedRest || "";
+    document.getElementById('inputPOS').value = savedPos || "";
+    document.getElementById('inputMASTER').value = savedMaster || "";
+
+    if (savedRest || savedPos) {
+        state.restData = savedRest ? parseText(savedRest) : [];
+        state.posData = savedPos ? parseText(savedPos) : [];
+        state.masterData = savedMaster ? parseText(savedMaster) : [];
+        processData();
+        showToast(`Loaded data for ${branch}`, "info");
+    } else {
+        state.restData = [];
+        state.posData = [];
+        state.masterData = [];
+        updateKPIs(0, 0);
+        document.getElementById('dataTableBody').innerHTML = "";
     }
+    renderMatrix();
+}
+
+function addToMatrix() {
+    if (!state.currentBranch) { showToast("Please select a branch first.", "error"); return; }
+    const totalItems = state.results.length;
+    const totalRest = parseInt(document.getElementById('kpi-rest').innerText.replace(/,/g, ''));
+    const totalPos = parseInt(document.getElementById('kpi-pos').innerText.replace(/,/g, ''));
+    const diff = totalPos - totalRest;
+    const acc = document.getElementById('kpi-acc').innerText;
+
+    const existingIndex = state.matrix.findIndex(m => m.branch === state.currentBranch);
+    if (existingIndex > -1) {
+        state.matrix[existingIndex] = { branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc };
+    } else {
+        state.matrix.push({ branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc });
+    }
+    renderMatrix();
+    showToast("Saved to Matrix!", "success");
+}
+
+function loadFromMatrix(branchName) {
+    const select = document.getElementById('branchSelect');
+    select.value = branchName;
+    switchBranch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function removeMatrix(index) {
+    state.matrix.splice(index, 1);
+    renderMatrix();
+}
+
+function clearAllData() {
+    if(confirm("Are you sure you want to clear all inputs?")) {
+        document.getElementById('inputMASTER').value = "";
+        document.getElementById('inputREST').value = "";
+        document.getElementById('inputPOS').value = "";
+        state.masterData = [];
+        state.restData = [];
+        state.posData = [];
+        state.results = [];
+        updateKPIs(0, 0);
+        document.getElementById('dataTableBody').innerHTML = "";
+        showToast("Data cleared", "info");
+    }
+}
+
+// Search Listener
+let searchTimeout = null;
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const filter = this.value.toUpperCase();
+        const rows = document.getElementById('dataTableBody').getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const td = rows[i].getElementsByTagName('td')[0]; 
+            if (td) {
+                const txtValue = td.textContent || td.innerText;
+                rows[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? "" : "none";
+            }
+        }
+    }, 300);
 });
 
-// --- 10. REPORTS ---
+// --- 12. REPORTING ---
 function generateReport() {
-    if (state.results.length === 0) { alert("No data available."); return; }
+    if (state.results.length === 0) { showToast("No data available.", "error"); return; }
     const branch = state.currentBranch || "Unspecified";
     const totalItems = state.results.length;
     const varianceItems = state.results.filter(r => r.d !== 0);
@@ -1070,44 +1238,39 @@ function generateReport() {
     document.getElementById('rptVariance').innerText = varianceCount;
     document.getElementById('rptMatched').innerText = matchedCount;
 
-    updateReportTable(varianceItems);
-    document.getElementById('reportModal').style.display = 'flex';
-}
-
-function updateReportTable(varianceItems) {
     const tbody = document.getElementById('reportTableBody');
-    const noMsg = document.getElementById('noVarianceMsg');
-    
     tbody.innerHTML = "";
     
     if (varianceItems.length === 0) {
-        if(noMsg) noMsg.style.display = 'block';
-        return;
+        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px;'>✅ Perfect Match! No variances found.</td></tr>";
     } else {
-        if(noMsg) noMsg.style.display = 'none';
+        varianceItems.forEach(item => {
+            const tr = document.createElement('tr');
+            let diffClass = "diff-zero";
+            if (item.d > 0) diffClass = "diff-pos";
+            if (item.d < 0) diffClass = "diff-neg";
+
+            tr.innerHTML = `
+                <td>${item.name}</td>
+                <td style="text-align:center">${item.r}</td>
+                <td style="text-align:center">${item.p}</td>
+                <td style="text-align:center" class="${diffClass}">${item.d > 0 ? '+' : ''}${item.d}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
+    document.getElementById('reportModal').style.display = 'flex';
+}
 
-    varianceItems.forEach(item => {
-        const tr = document.createElement('tr');
-        let diffClass = "diff-zero";
-        if (item.d > 0) diffClass = "diff-pos";
-        if (item.d < 0) diffClass = "diff-neg";
-
-        tr.innerHTML = `
-            <td>${item.name}</td>
-            <td style="text-align:center">${item.r}</td>
-            <td style="text-align:center">${item.p}</td>
-            <td style="text-align:center" class="${diffClass}">${item.d > 0 ? '+' : ''}${item.d}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+function closeReport() {
+    document.getElementById('reportModal').style.display = 'none';
 }
 
 function downloadReportCSV() {
     const branch = state.currentBranch || "Unspecified";
     const varianceItems = state.results.filter(r => r.d !== 0);
     
-    if (varianceItems.length === 0) { alert("No variances to download!"); return; }
+    if (varianceItems.length === 0) { showToast("No variances to download!", "info"); return; }
 
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += `Variance Report - ${branch}\n`;
@@ -1125,10 +1288,7 @@ function downloadReportCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-}
-
-function closeReport() {
-    document.getElementById('reportModal').style.display = 'none';
+    showToast("CSV Downloaded!", "success");
 }
 
 function copyReport() {
@@ -1153,7 +1313,7 @@ function copyReport() {
         text += `✅ Perfect Match! No variances found.\n`;
     }
 
-    navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+    navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard!", "success"));
 }
 </script>
 
