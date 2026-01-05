@@ -1,1321 +1,634 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Reconciliation (PRO Edition V2)</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- SheetJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <title>Crispy Chicken Inventory (V6 - All-in-One)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-dark: #1d4ed8;
-            --secondary: #64748b;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Dark Mode Variables */
-        body.dark-mode {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --border: #334155;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-body); 
-            margin: 0; padding: 0; 
-            color: var(--text-main); 
-            line-height: 1.5;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
-        
-        /* --- Components --- */
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border);
-            padding: 24px;
-            margin-bottom: 24px;
-            transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
-        }
-        .card:hover { transform: translateY(-2px); }
-
-        /* --- Header --- */
-        header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 25px; 
-        }
-        .header-title h1 { margin: 0; font-size: 26px; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; }
-        .header-title span { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Branch Selector & Tools */
-        .header-tools { display: flex; gap: 15px; align-items: center; }
-        .branch-selector { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 6px 20px; border-radius: 50px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-        .branch-selector select { 
-            border: none; font-size: 15px; font-weight: 700; color: var(--primary-dark); 
-            background: transparent; outline: none; cursor: pointer; appearance: none;
-            padding-right: 20px; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CBF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%2024%2024h-44.8a17.6%2017.6%200%200%2024-24v128c0%2020.7-13.4%2038-32.2%2038-56.2v-46.8c0-22-14.2-37.9-32.8-58.2zm0%20116.8c-24.6-5.7-50.8-16.3-76.1-29.7l-40.3-33.6c-10.2-8.5-19.7-19.6-29.3-32.4-35.7-21.6-8.2-44.4-16.2-65.8-23.1-38.1-12.9-58.1-26.5-63.2-42.9-6.2-12.4-22.8-26-60.2-32.5-41.6-5.1-14.9-15.2-23.2-24.2-32.8-33.6-15.4-12.4-22.8-26-36.2-29.7-36.2-15.4-12.4-22.8-26-51.1-29.7-76.1-16.3-25.4-5.7-76.1-29.7-32.8%229.4%20248.4z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 10px; 
-        }
-
-        /* Dark Mode Toggle */
-        .theme-toggle { cursor: pointer; background: var(--bg-card); padding: 8px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .theme-toggle:hover { background: var(--border); }
-
-        /* --- KPI Area --- */
-        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 24px; }
-        .kpi-card { background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        .kpi-card::before { content:''; position: absolute; top:0; left:0; width:4px; height:100%; }
-        .kpi-card.blue::before { background: var(--primary); }
-        .kpi-card.green::before { background: var(--success); }
-        .kpi-card.red::before { background: var(--danger); }
-        .kpi-card.orange::before { background: var(--warning); }
-        .kpi-card.purple::before { background: #8b5cf6; } /* New for Health Score */
-        
-        .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; }
-        .kpi-value { font-size: 28px; font-weight: 800; margin: 5px 0; color: var(--text-main); }
-        .kpi-sub { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: auto; }
-
-        /* --- Charts Section --- */
-        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
-
-        /* --- Action Bar --- */
-        .actions { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .btn { 
-            padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; 
-            cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; 
-            transition: all 0.2s; box-shadow: var(--shadow-sm);
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); }
-        .btn-outline:hover { background: var(--border); border-color: var(--text-muted); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-purple { background: #8b5cf6; color: white; } /* New Demo Button */
-
-        /* --- Toggle Switch --- */
-        .toggle-switch { display: flex; align-items: center; gap: 10px; margin-left: auto; cursor: pointer; }
-        .toggle-input { display: none; }
-        .toggle-label { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--text-muted); }
-        .toggle-slider { width: 44px; height: 24px; background: var(--border); border-radius: 24px; position: relative; transition: 0.3s; margin-left: 10px; }
-        .toggle-slider::before { content:''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        input:checked + .toggle-slider { background: var(--primary); }
-        input:checked + .toggle-slider::before { transform: translateX(20px); }
-
-        /* --- Matrix --- */
-        .matrix-table { width: 100%; border-collapse: collapse; }
-        .matrix-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; }
-        .matrix-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        .matrix-row { cursor: pointer; transition: background 0.1s; border-radius: 4px; }
-        .matrix-row:hover { background-color: var(--bg-body); }
-        .matrix-row.active { background-color: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary); }
-
-        /* --- Main Table --- */
-        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead th { 
-            background: var(--bg-body); color: var(--text-muted); font-weight: 700; text-align: left; padding: 12px 16px; 
-            border-bottom: 1px solid var(--border); 
-            position: sticky; top: 0; z-index: 10; 
-        }
-        tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); }
-        tbody tr:hover { background-color: var(--bg-body); }
-        
-        .editable-cell { 
-            background: var(--bg-body); border: 1px solid transparent; border-radius: 4px; padding: 6px 10px; 
-            font-family: 'Menlo', 'Monaco', monospace; font-weight: 600; color: var(--primary-dark); 
-            cursor: text; min-width: 60px; text-align: center; display: inline-block; transition: all 0.2s;
-        }
-        .editable-cell:focus { background: var(--bg-card); outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .editable-cell:hover { border-color: var(--text-muted); background: var(--bg-card); }
-
-        .diff-pos { color: var(--success); font-weight: 700; }
-        .diff-neg { color: var(--danger); font-weight: 700; }
-        .diff-zero { color: var(--text-muted); font-weight: 600; }
-
-        /* --- Config / Inputs --- */
-        .config-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .input-section { margin-bottom: 20px; }
-        .input-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .input-header h3 { margin: 0; font-size: 16px; color: var(--text-main); }
-        
-        .file-drop { border: 2px dashed var(--border); border-radius: 8px; padding: 30px; text-align: center; background: var(--bg-body); transition: all 0.2s; position: relative; }
-        .file-drop:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); transform: scale(1.01); }
-        .file-drop.dragging { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .file-drop input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        
-        textarea { 
-            width: 100%; height: 70px; border: 1px solid var(--border); border-radius: 6px; 
-            padding: 12px; font-family: 'Menlo', monospace; font-size: 12px; resize: vertical; 
-            margin-top: 10px; background: var(--bg-card); color: var(--text-main); box-sizing: border-box; transition: border 0.2s;
-        }
-        textarea:focus { border-color: var(--primary); outline: none; }
-
-        /* --- Modal --- */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal { background: var(--bg-card); width: 800px; border-radius: 16px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; color: var(--text-main); }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* --- TOAST NOTIFICATIONS --- */
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { 
-            background: var(--bg-card); border-left: 4px solid var(--primary); padding: 16px 20px; 
-            border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
-            font-weight: 500; font-size: 14px; opacity: 0; transform: translateX(50px); 
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 12px; color: var(--text-main);
-        }
-        .toast.show { opacity: 1; transform: translateX(0); }
-        .toast.success { border-color: var(--success); }
-        .toast.error { border-color: var(--danger); }
-        .toast.info { border-color: var(--primary); }
-
-        /* --- Utilities --- */
-        .search-bar { width: 300px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; transition: border 0.2s; background: var(--bg-card); color: var(--text-main); }
-        .search-bar:focus { border-color: var(--primary); outline: none; }
-        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--border); color: var(--text-muted); font-weight: 700; }
-
-        @media print {
-            .actions, .config-section, .file-drop, .btn, .branch-selector, .charts-section, #toast-container, .header-tools { display: none !important; }
-            body, .container { background: white; max-width: 100%; margin: 0; padding: 0; }
-            body.dark-mode { background: white; color: black; }
-            .card { box-shadow: none; border: none; padding: 0; margin: 0; }
-            table { border: 1px solid #ccc; }
-            th, td { border: 1px solid #ccc; }
-            .editable-cell { border: none; }
-            .kpi-card { border: 1px solid #ccc; }
-        }
+        :root { --primary-color: #d32f2f; --primary-dark: #b71c1c; --secondary-color: #fbc02d; --bg-color: #f4f6f8; --card-bg: #ffffff; --text-color: #2c3e50; --border-color: #e0e0e0; --success-color: #2e7d32; --warning-color: #ed6c02; --danger-color: #d32f2f; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 8px; --flour-color: #f57f17; --oil-color: #e65100; }
+        [data-theme="dark"] { --bg-color: #121212; --card-bg: #1e1e1e; --text-color: #e0e0e0; --border-color: #333; --shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        * { box-sizing: border-box; outline: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; font-size: 14px; }
+        header { background-color: var(--primary-color); color: white; padding: 15px 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
+        .header-title h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        select, input[type="number"], input[type="text"], input[type="month"] { padding: 8px 12px; border:1px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-color); font-family: inherit; transition: border 0.2s; }
+        select:focus, input:focus { border-color: var(--secondary-color); }
+        select.highlight { background-color: #fff3e0; border-color: var(--secondary-color); }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; color: white; font-size: 13px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-info { background-color: #0288d1; }
+        .btn-secondary { background-color: #555; }
+        .btn-warning { background-color: var(--warning-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: inherit; }
+        .btn-sm { padding: 4px 8px; font-size: 11px; }
+        .nav-tabs { display: flex; background: var(--card-bg); border-radius: var(--radius) var(--radius) 0 0; border-bottom: 2px solid var(--border-color); margin-bottom: 0; overflow-x: auto; }
+        .nav-tab { padding: 12px 20px; cursor: pointer; border: none; background: none; color: #777; font-weight: bold; border-bottom: 3px solid transparent; transition: 0.3s; white-space: nowrap; }
+        .nav-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background-color: rgba(211, 47, 47, 0.05); }
+        .tab-content { display: none; background: var(--card-bg); padding: 20px; border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card h3 { margin-top: 0; border-bottom: 2px solid var(--secondary-color); padding-bottom: 8px; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: #666; }
+        .row { display: flex; gap: 10px; }
+        .row .form-group { flex: 1; }
+        .table-container { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        th { background-color: #f5f5f5; color: #333; position: sticky; top: 0; font-size: 12px; white-space: nowrap; font-weight: 700; }
+        [data-theme="dark"] th { background-color: #333; color: #eee; }
+        td input { width: 100%; border: 1px solid transparent; background: transparent; text-align: center; font-weight: bold; padding: 5px; font-size: 14px; }
+        td input:hover, td input:focus { border-color: var(--primary-color); background: var(--card-bg); }
+        .text-danger { color: var(--danger-color); }
+        .text-success { color: var(--success-color); }
+        .variance-cell { font-weight: bold; font-size: 13px; }
+        .usage-calc-type { font-size: 10px; display: block; color: #888; margin-top: 2px; }
+        .prod-total { margin-top: 20px; padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; display: flex; justify-content: space-around; }
+        [data-theme="dark"] .prod-total { background: #2c2c2c; border-color: #444; }
+        .prod-stat-box { text-align: center; }
+        .prod-stat-num { font-size: 24px; font-weight: bold; color: var(--oil-color); }
+        .prod-stat-num.flour { color: var(--flour-color); }
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { pointer-events: auto; min-width: 300px; background-color: var(--primary-color); color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between; gap: 15px; animation: slideUp 0.4s ease-out; font-weight: 600; font-size: 14px; }
+        .toast-close { background: none; border: none; color: rgba(255,255,255,0.8); font-size: 20px; cursor: pointer; transition: color 0.2s; }
+        .toast-close:hover { color: white; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media print { body { background: white; color: black; padding: 0; } .no-print, header, .nav-tabs, .btn, .toast-container { display: none !important; } .tab-content { display: block !important; border: none; box-shadow: none; padding: 0; } .card { border: none; padding: 0; } table { border: 1px solid #000; font-size: 10px; table-layout: auto; } th, td { border: 1px solid #000; padding: 4px; } th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; } .print-header { display: flex !important; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; } .print-footer { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid #000; } td input { border: none; appearance: none; font-size: 10px; } .prod-total { border: 1px solid #000; background: #eee !important; } }
+        .print-header, .print-footer { display: none; }
     </style>
 </head>
 <body>
-
-<div class="container">
-
-    <!-- HEADER -->
+    <div id="toastContainer" class="toast-container"></div>
     <header>
-        <div class="header-title">
-            <h1>Recon Pro <span style="color:var(--primary)">V2</span></h1>
-            <span>Enterprise Stock & Sales Analytics</span>
-        </div>
-        
-        <div class="header-tools">
-            <!-- Dark Mode Toggle -->
-            <div class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-                🌗
-            </div>
-
-            <!-- UPDATED BRANCH LIST -->
-            <div class="branch-selector">
-                <label for="branchSelect" style="font-size:14px; color:var(--text-muted); font-weight:700;">Branch:</label>
-                <select id="branchSelect" class="branch-select" onchange="switchBranch()">
-                    <option value="">-- Select Branch --</option>
-                    <option value="Hamdan St">Crispy Chicken Hamdan St</option>
-                    <option value="Khaldia">Crispy Chicken Khaldia</option>
-                    <option value="Shabiya 11">Crispy Chicken Shabiya 11</option>
-                    <option value="Muroor">Crispy Chicken Muroor</option>
-                    <option value="Al Electra">Crispy Chicken Al Electra</option>
-                    <option value="Al Barsha">Crispy Chicken Al Barsha</option>
-                    <option value="Al Satwa">Crispy Chicken Al Satwa</option>
-                    <option value="Al Rigga">Crispy Chicken Al Rigga</option>
-                    <option value="Al Majaz">Crispy Chicken Al Majaz</option>
-                </select>
-            </div>
+        <div class="header-title"><h1><i class="fas fa-drumstick-bite"></i> Crispy Chicken Inventory</h1></div>
+        <div class="header-controls">
+            <select id="branchSelect" onchange="app.changeContext()">
+                <option value="HMD">Crispy Chicken-Hamdan St</option><option value="KLD">Crispy Chicken Khaldia</option><option value="SHB">Crispy Chicken Shabiya 11</option><option value="MUR">Crispy Chicken Muroor</option><option value="ELC">Crispy Chicken Al Electra</option><option value="BRH">Crispy Chicken Al Barsha</option><option value="STW">Crispy Chicken Al Satwa</option><option value="RGG">Crispy Chicken Al Rigga</option><option value="MJZ">Crispy Chicken Al Majaz</option>
+            </select>
+            <input type="month" id="monthPicker" onchange="app.changeContext()">
+            <button class="btn btn-ghost" onclick="app.toggleTheme()"><i class="fas fa-adjust"></i></button>
         </div>
     </header>
-
-    <!-- KPI CARDS -->
-    <div class="kpi-grid">
-        <div class="kpi-card blue">
-            <div class="kpi-label">Total REST</div>
-            <div class="kpi-value" id="kpi-rest">0</div>
-            <div class="kpi-sub">Stock Count Volume</div>
-        </div>
-        <div class="kpi-card green">
-            <div class="kpi-label">Total POS</div>
-            <div class="kpi-value" id="kpi-pos">0</div>
-            <div class="kpi-sub">System Sales Volume</div>
-        </div>
-        <div class="kpi-card red">
-            <div class="kpi-label">Net Variance</div>
-            <div class="kpi-value diff-zero" id="kpi-diff">0</div>
-            <div class="kpi-sub">Difference (POS - REST)</div>
-        </div>
-        <div class="kpi-card orange">
-            <div class="kpi-label">Accuracy</div>
-            <div class="kpi-value" id="kpi-acc">100%</div>
-            <div class="kpi-sub">Volume Match Rate</div>
-        </div>
-        <div class="kpi-card purple">
-            <div class="kpi-label">Health Score</div>
-            <div class="kpi-value" id="kpi-health" style="color:#8b5cf6">A+</div>
-            <div class="kpi-sub">Inventory Integrity</div>
-        </div>
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="app.switchTab('tab-dashboard', this)">Dashboard</button>
+        <button class="nav-tab" onclick="app.switchTab('tab-report', this)">Inventory Report</button>
+        <button class="nav-tab" onclick="app.switchTab('tab-production', this)">Flour & Oil Report</button>
+        <button class="nav-tab" onclick="app.switchTab('tab-settings', this)">Settings</button>
     </div>
-
-    <!-- CHARTS SECTION -->
-    <div class="card charts-section">
-        <div class="charts-grid">
-            <!-- Chart 1: Volume Comparison -->
+    <div id="tab-dashboard" class="tab-content active">
+        <div class="grid-2">
             <div>
-                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Volume Comparison</h3>
-                <div class="chart-container">
-                    <canvas id="volumeChart"></canvas>
+                <div class="card"><h3><i class="fas fa-cash-register"></i> New Sale Entry</h3>
+                    <div class="form-group"><label>Select Item</label><select id="saleItemSelect"></select></div>
+                    <div class="form-group"><label>Quantity</label><input type="number" id="saleQty" value="1" min="1"></div>
+                    <button class="btn btn-primary" style="width:100%" onclick="app.addSale()"><i class="fas fa-plus"></i> Add to Bill</button>
                 </div>
+                <div class="card"><h3><i class="fas fa-history"></i> Today's Sales Log</h3><ul id="salesLogList" style="padding-left: 0; list-style: none; max-height: 300px; overflow-y: auto;"></ul><div style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;"><strong>Total Sales: </strong> <span id="totalSalesCount">0</span></div></div>
             </div>
-            <!-- Chart 2: Top 10 Variances -->
             <div>
-                <h3 style="margin-top:0; font-size:16px; color:var(--text-muted);">Top 10 Variances (Absolute)</h3>
-                <div class="chart-container">
-                    <canvas id="varianceChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- COMPARISON MATRIX -->
-    <div class="card" style="padding: 15px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0; font-size:16px;">Branch Comparison Matrix</h3>
-            <span style="font-size:12px; color:var(--text-muted);">Click row to restore data</span>
-        </div>
-        <table class="matrix-table">
-            <thead>
-                <tr>
-                    <th>Branch</th>
-                    <th>Items</th>
-                    <th>Total REST</th>
-                    <th>Total POS</th>
-                    <th>Variance</th>
-                    <th>Accuracy</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="matrixBody">
-                <!-- Injected via JS -->
-            </tbody>
-        </table>
-    </div>
-
-    <!-- MAIN TABLE SECTION -->
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:18px;">Item Reconciliation</h3>
-            <div style="display:flex; gap:15px; align-items:center;">
-                <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search items...">
-                
-                <label class="toggle-switch">
-                    <input type="checkbox" id="varianceOnlyFilter" class="toggle-input" onchange="renderTable()">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">Variances Only</span>
-                </label>
-
-                <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
-                <button class="btn btn-primary" onclick="generateReport()">📄 Report</button>
-                <button class="btn btn-success" onclick="addToMatrix()">💾 Save</button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 40%">Item Name</th>
-                        <th style="width: 15%; text-align:center">Qty REST</th>
-                        <th style="width: 15%; text-align:center">Qty POS</th>
-                        <th style="width: 15%; text-align:center">Diff</th>
-                        <th style="width: 15%; text-align:center">Var %</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- INPUT CONFIGURATION SECTION -->
-    <div class="card config-section">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <h3 style="margin:0; color:var(--text-main);">Data Configuration</h3>
-            <div style="display:flex; gap: 10px;">
-                <button class="btn btn-danger" onclick="clearAllData()" style="font-size:12px; padding:8px 16px;">🗑️ Clear Data</button>
-                <button class="btn btn-purple" onclick="loadDemoData()" style="font-size:12px; padding:8px 16px;">🚀 Load Demo Data</button>
-            </div>
-        </div>
-        
-        <!-- Master Data -->
-        <div class="input-section">
-            <div class="input-header">
-                <h3>📘 1. Master List</h3>
-                <button class="btn btn-outline" onclick="loadProvidedList()" style="font-size:12px; padding:6px 12px;">Load Clean List</button>
-            </div>
-            <div class="file-drop">
-                <span class="tag">Upload Excel</span>
-                <input type="file" accept=".xlsx, .xls" onchange="uploadExcel(this, 'master')">
-                <span style="font-size:12px; color:var(--text-muted);">Drop Master List File Here</span>
-            </div>
-            <textarea id="inputMASTER" placeholder="Paste Master Item List..."></textarea>
-        </div>
-
-        <!-- Sales Data -->
-        <div class="input-section">
-            <div class="input-header">
-                <h3>📂 2. Sales Data (REST & POS)</h3>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <div>
-                    <label style="font-weight:600; font-size:12px; display:block; margin-bottom:5px;">Platform (REST)</label>
-                    <div class="file-drop">
-                        <span class="tag">Upload Excel</span>
-                        <input type="file" accept=".xlsx, .xls" onchange="uploadExcel(this, 'rest')">
-                        <span style="font-size:12px; color:var(--text-muted);">Drop REST File</span>
+                <div class="card"><h3><i class="fas fa-chart-pie"></i> Branch Quick Stats</h3>
+                    <div style="display: flex; gap: 20px; text-align: center; margin-bottom: 15px;">
+                        <div style="flex:1; background: var(--bg-color); padding: 15px; border-radius: 8px;"><div style="font-size: 24px; font-weight: bold; color: var(--oil-color);" id="dashTotalOil">0.00</div><div style="font-size: 12px;">Total Oil (Kg/L)</div></div>
+                        <div style="flex:1; background: var(--bg-color); padding: 15px; border-radius: 8px;"><div style="font-size: 24px; font-weight: bold; color: var(--flour-color);" id="dashTotalFlour">0.00</div><div style="font-size: 12px;">Total Flour (Kg)</div></div>
                     </div>
-                    <textarea id="inputREST" placeholder="Paste REST Data (Name | Qty)..."></textarea>
-                </div>
-                <div>
-                    <label style="font-weight:600; font-size:12px; display:block; margin-bottom:5px;">POS (Cashier)</label>
-                    <div class="file-drop">
-                        <span class="tag">Upload Excel</span>
-                        <input type="file" accept=".xlsx, .xls" onchange="uploadExcel(this, 'pos')">
-                        <span style="font-size:12px; color:var(--text-muted);">Drop POS File</span>
+                    <div style="display: flex; gap: 20px; text-align: center;">
+                         <div style="flex:1; background: var(--bg-color); padding: 15px; border-radius: 8px;"><div style="font-size: 20px; font-weight: bold; color: #333;" id="dashTotalSales">0</div><div style="font-size: 12px;">Total Trans.</div></div>
+                         <div style="flex:1; background: var(--bg-color); padding: 15px; border-radius: 8px;"><div style="font-size: 20px; font-weight: bold; color: var(--primary-color);" id="dashTotalVariance">0.00</div><div style="font-size: 12px;">Total Variance</div></div>
                     </div>
-                    <textarea id="inputPOS" placeholder="Paste POS Data (Name | Qty)..."></textarea>
                 </div>
+                <div class="card"><h3><i class="fas fa-globe"></i> Global Variance Summary <small style="font-size: 11px; font-weight: normal; color: #666;">(All Branches - Current Month)</small></h3>
+                    <div class="grid-2"><div><h4 style="color: var(--success-color); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Top 5 Surplus</h4><ul id="highVarList" style="padding-left: 0; list-style: none; max-height: 200px; overflow-y: auto; margin: 0;"></ul></div><div><h4 style="color: var(--danger-color); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Top 5 Shortage</h4><ul id="lowVarList" style="padding-left: 0; list-style: none; max-height: 200px; overflow-y: auto; margin: 0;"></ul></div></div>
+                </div>
+                <div class="card"><h3><i class="fas fa-info-circle"></i> System Logic</h3><p style="font-size: 13px; color: #555;"><strong>Oil & Flour:</strong> Calculated based on Inventory Shortage.<br><strong>Other Items:</strong> Calculated based on Standard Recipes.</p></div>
             </div>
         </div>
     </div>
-
-    <!-- TOAST CONTAINER -->
-    <div id="toast-container"></div>
-
-</div>
-
-<!-- REPORT MODAL -->
-<div id="reportModal" class="modal-overlay">
-    <div class="modal">
-        <h2 style="margin-top:0; color:var(--primary-dark);">Reconciliation Summary</h2>
-        <p id="reportMeta" style="color:var(--text-muted); margin-bottom:20px;">Branch: ... | Date: ...</p>
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
-            <div style="background:var(--bg-body); padding:15px; border-radius:8px; text-align:center;">
-                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">VARIANCE COUNT</div>
-                <div id="rptVariance" style="font-size:28px; font-weight:800; color:var(--danger);">0</div>
-            </div>
-            <div style="background:var(--bg-body); padding:15px; border-radius:8px; text-align:center;">
-                <div style="font-size:12px; color:var(--text-muted); font-weight:700;">MATCHED ITEMS</div>
-                <div id="rptMatched" style="font-size:28px; font-weight:800; color:var(--success);">0</div>
-            </div>
-        </div>
-        
-        <!-- Variance Table -->
-        <div style="border-top: 1px solid var(--border); margin-top: 15px; padding-top: 15px;">
-            <h3 style="font-size:16px; margin: 0 0 10px 0;">📋 Item Variance Details</h3>
-            <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px;">
-                <table class="matrix-table" style="font-size:12px;">
-                    <thead style="position: sticky; top: 0; background: var(--bg-body); z-index: 5;">
-                        <tr>
-                            <th>Item Name</th>
-                            <th style="text-align:center">REST</th>
-                            <th style="text-align:center">POS</th>
-                            <th style="text-align:center">Diff</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div style="text-align:right; margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
-            <button class="btn btn-outline" onclick="closeReport()" style="float:left;">Close</button>
-            <button class="btn btn-outline" onclick="downloadReportCSV()">⬇️ Download CSV</button>
-            <button class="btn btn-success" onclick="copyReport()">Copy Text</button>
+    <div id="tab-report" class="tab-content">
+        <div class="print-header"><div><h2 style="margin: 0;">CRISPY CHICKEN</h2><strong>Inventory Report</strong></div><div style="text-align: center;"><h3 id="printBranchName" style="margin: 0;">Branch Name</h3><span id="printDatePeriod">Period</span></div><div style="text-align: right;"><div>Manager: ________________</div><div>Auditor: ________________</div></div></div>
+        <div class="card no-print"><div class="row" style="align-items: center; margin-bottom: 15px;"><h3 style="margin: 0; flex: 1;">Full Inventory Report</h3><div class="row" style="flex: 0;"><button class="btn btn-info" onclick="window.print()"><i class="fas fa-print"></i> Print</button></div></div><div class="table-container"><table id="inventoryTable"><thead><tr><th style="width: 20%;">Raw Material</th><th>Unit</th><th>Begin</th><th>Transfer In</th><th>Waste</th><th>Usage <small>(Calc)</small></th><th>Physical</th><th>Variance</th></tr></thead><tbody id="inventoryBody"></tbody></table></div></div><div class="print-footer"><div>Manager Signature</div><div>Auditor Signature</div></div>
+    </div>
+    <div id="tab-production" class="tab-content">
+        <div class="print-header"><div><h2 style="margin: 0;">CRISPY CHICKEN</h2><strong>Flour & Oil Consumption Report</strong></div><div style="text-align: center;"><h3 id="printBranchName2" style="margin: 0;">Branch Name</h3><span id="printDatePeriod2">Period</span></div><div style="text-align: right;"><div>Manager: ________________</div><div>Production Mgr: ________________</div></div></div>
+        <div class="card no-print"><div class="row" style="align-items: center; margin-bottom: 15px;"><h3 style="margin: 0; flex: 1;">Production Consumption Details</h3><div class="row" style="flex: 0;"><button class="btn btn-info" onclick="window.print()"><i class="fas fa-print"></i> Print</button></div></div><div class="table-container"><table id="productionTable"><thead><tr><th style="width: 25%;">Item Name</th><th style="color: var(--oil-color);">Oil per Unit (ml)</th><th style="color: var(--flour-color);">Flour per Unit (g)</th><th>Qty Sold</th><th style="color: var(--oil-color);">Total Oil (Ltr)</th><th style="color: var(--flour-color);">Total Flour (Kg)</th></tr></thead><tbody id="productionBody"></tbody></table></div><div class="prod-total"><div class="prod-stat-box"><div class="prod-stat-num" id="prodTotalOilLtr">0.00</div><div>Total Oil (Ltr)</div></div><div class="prod-stat-box"><div class="prod-stat-num flour" id="prodTotalFlourKg">0.00</div><div>Total Flour (Kg)</div></div></div></div><div class="print-footer"><div>Manager Signature</div><div>Production Mgr Signature</div></div>
+    </div>
+    <div id="tab-settings" class="tab-content">
+        <div class="grid-2">
+            <div class="card"><h3>Manage Raw Materials</h3><div class="form-group"><label>Name</label><input type="text" id="ingNameInput"></div><div class="form-group"><label>Unit</label><select id="ingUnitInput"><option value="pcs">pcs</option><option value="kg">kg</option><option value="ltr">ltr</option><option value="pack">pack</option></select></div><input type="hidden" id="editIngId"><button class="btn btn-primary" id="saveIngBtn" onclick="app.saveIngredient()">Add Ingredient</button><button class="btn btn-secondary" id="cancelEditBtn" onclick="app.cancelEditIng()" style="display: none;">Cancel</button><hr><h4>Existing Ingredients</h4><div class="table-container" style="max-height: 400px; overflow-y: auto;"><table style="font-size: 12px;"><thead><tr><th>Name</th><th>Unit</th><th>Actions</th></tr></thead><tbody id="ingListBody"></tbody></table></div></div>
+            <div class="card"><h3>Add / Edit Menu Item & Consumption Rates</h3><div class="form-group"><label>1. Filter by Category</label><select id="menuCatFilter" class="highlight" onchange="app.populateItemSelect(this.value)"><option value="ALL">Show All Categories</option></select><small style="color: #666;">Select a category to show only those items below.</small></div><div class="form-group"><label>2. Select Item Name</label><select id="menuItemSelect" class="highlight" onchange="app.onItemSelect(this.value)" style="width: 100%; margin-bottom: 5px; padding: 8px;"><option value="">-- Select Existing Item to Edit --</option></select></div><div class="form-group"><label>Item Name (Override / New)</label><input type="text" id="newMenuName" placeholder="OR TYPE NEW NAME HERE"></div><div class="form-group"><label>Category for NEW Items</label><select id="newMenuCategory"></select></div><div class="form-group"><label>3. Price (AED)</label><input type="number" id="newMenuPrice" value="0"></div><hr style="border: 0; border-top: 2px solid var(--secondary-color);"><h4>4. Consumption Rates (Oil & Flour)</h4><div class="row form-group"><div style="flex: 1;"><label style="color: var(--oil-color);">Oil (ml)/Unit</label><input type="number" id="menuOilRate" value="0" min="0" step="0.1"></div><div style="flex: 1;"><label style="color: var(--flour-color);">Flour (g)/Unit</label><input type="number" id="menuFlourRate" value="0" min="0" step="0.1"></div></div><h4>5. Recipe (Ingredients)</h4><div class="row form-group"><select id="recipeIngSelect" style="flex: 2;"></select><input type="number" id="recipeQty" placeholder="Qty" style="flex: 1;" step="0.001"><button class="btn btn-secondary" onclick="app.addRecipeLine()">+</button></div><ul id="draftRecipeList" style="border: 1px dashed #ccc; padding: 10px; min-height: 50px; margin-bottom: 10px; list-style: none;"></ul><button class="btn btn-success" style="width: 100%; font-size: 16px;" onclick="app.saveMenuItem()">6. Save & Sell Item</button></div>
         </div>
     </div>
-</div>
 
-<script>
-// --- 1. DATA CONSTANTS ---
-const PROVIDED_MASTER_DATA = `Item 
-ULTIMATE  Spicy
-Daily Spicy Meal
-Daily Original Meal
-Daily Spicy Meal Noon
-Ultimate S Noon Offers
-DAILY OFFER Original Meal
-SUPER  MEAL  Original
-DAILY OFFER Spicy Meal
-Daily MIX Meal Noon
-Daily MIX Meal
-SAVING MEAL Original
-SUPER MEAL  Spicy
-Daily Original Meal Noon
-SUPER MEAL - MIX
-RICE MEAL Original
-SAVING MEAL Spicy
-DAILY OFFER MIX Meal
-TWIN BEEF BURGER
-ULTIMATE Original
-BUCKET MEAL Spicy
-BEEF BURGER SANDWICH
-IDEAL MEAL  Original
-RICE MEAL Spicy
-WHITE RICE
-MEGA MEAL Original
-IDEAL MEAL  Spicy
-BUCKET MEAL Original
-GRAVY SAUCE
-BUCKET MEAL MIX
-SPICIAL FAMILY Original
-PEPSI S
-SNACK SANDWICH Spicy
-IDEAL MEAL MIX
-FRENCH FRIES SMALL
-LITER PEPSI
-1/2  CHICKEN  Original
-CHICKEN STRIPS Original Meal
-TWIST Origina SANDWICHES
-SNACK SANDWICH Original
-TWIST Spicy SANDWICHES
-DELIVERY CHARGES 5
-SPICIAL FAMILY MIX
-MEGA MEAL  Spicy
-SHAWARMA Origina SANDWICHES
-SUPER CRUNCHY SP SANDWICHES
-FRENCH FRIES LARGE
-HOT CHEDAR CHEESE
-SNACK BOX Spicy
-Twin Twist Original
-Crispy Strips Spicy Meal
-Big Coleslaw
-Twin Twist Spicy
-SUPER CRUNCHY OR SANDWICHES
-SNACK BOX Original
-FAJITA SANDWICHES
-SPICED RICE
-1/2  CHICKEN  Spicy
-FAJITA Spicy SANDWICHES
-Twin Suprem Spicy
-SPICIAL FAMILY Spicy
-TORNADO Origina   SANDWICHES
-Crispy Snack Spicy Meal
-GARLIC - SMALL
-FRENCH FRIES BOX
-Small Coleslaw
-DYNAMITE Origina  SANDWICHES
-SUPREME Origina  SANDWICHES
-Twin Chicken Burger
-CRISPY RICE
-CHICKEN BURGER SANDWICH
-Steak Combo
-CRISPY LARGE Original
-MEGA MEAL MIX
-ECONMY MEAL Original
-M.WATER 500ML
-SHAWARMA Spicy SANDWICHES
-Volcano Sandwich Double
-TWIN SHAWARMA MEAL
-BUFFALO SANDWICH
-Crispy Snack Original Meal
-Volcano Combo Single
-Twin Supreme Meal
-Volcano Combo Double
-Twin SUPREM MIX
-STRIPS FAMILY  Original
-Steak Sandwich
-MAXI CHICKEN SINGLE COMBO
-CHICKEN DAY Original
-MAXI CHICKEN DOUBLE COMBO
-LITER Mountain Dew
-Volcano Sandwich Single
-TORNADO Spicy SANDWICHES
-SUPREME Spicy SANDWICHES
-Mountain Dew S
-SPICY PCS
-12 PCS PACKET MIX
-DYNAMITE SAUCE
-KANZA
-Spicy - FRIES
-ECONMY MEAL Spicy
-DYNAMITE Spicy SANDWICHES
-MAX DOUBLE SANDWICH
-BEEF BURGER COMBO
-12 PCS PACKET Original
-7UP S
-MIRINDA S
-BUN
-20 PCS PACKET MIX
-STRIPS FAMILY  Spicy
-Twin Twist MIX
-12 PCS PACKET Spicy
-LITER MIRINDA
-LITER 7UP
-CRISPY LARGE Spicy
-NORMAL PCS
-FAJITA COMBO
-SUPREM OR COMBO
-CHICKEN DAY SPICY
-20 PCS PACKET Spicy
-FAJITA Spicy COMBO
-TORNADO OR COMBO
-**Spicy Fries**
-SUPER CRUNCHY SP COMBO
-SUPER CRUNCHY OR COMBO
-TWIST OR COMBO
-SUPREM SP COMBO
-TWIST BOX  Original
-TWIST BOX  SpICY
-SMALL JUICE
-TWIST SP COMBO
-CRISPY SMALL Spicy
-Ultimate O Noon Offers
-Ultimate M Noon Offers
-16 PCS PACKET Spicy
-ECONMY MEAL MIX
-DIET PEPSI S
-TORNADO SP COMBO
-UP CHARAGE
-Upsize Large Fries And Large Pep
-STRIPS FAMILY MIX
-20 PCS PACKET Original
-16 PCS PACKET Original
-Extra Chesses
-KIDS MEAL POP CORN
-PKT STRIPS 20 MIX
-QUICK NORMAL
-QUICK SPICY
-CRISPY SMALL  Original
-KIDS MEAL NUGGETS
-JUCE LAKNOR LARGE
-CHICKEN BUEGER COMBO
-GO KANZA .
-Golden 4 meal Spicy
-MAX SINGLE SANDWICH
-DYNAMITE OR COMBO
-DYNAMITE SPY COMBO
-Cheese
-BUFFALO MEAL
-CHICKEN DAY MIX Noon
-Golden 4 meal Normal
-LARGE POP CORN
-GO Family KANZA
-6 PCS NUGGETS
-Go Large
-SMALL POP CORN
-LARGE MIRINDA
-LARGE  PEPSI
-Extra BBQ
-GO Shani
-**Not Spicy Fries**
-10 STRIPS OR 10 STRIPS SPY
-12 SPICY 8 ORGINAL
-16 SPICY 4 ORGINAL
-1 CH OR 7 CH SP
-2 CH OR 6 CH SP
-2LITER 7UP Combo
-2LITER PEPSI Combo
-3 CH OR 5 CH SP
-3 STRIPS OR 5 STRIPS SP
-4 CH OR 4 CH SP
-4 ORGINAL 12 SPICY
-4 SPICY 12 ORGINAL
-4 SPICY 8 ORGINAL
-4 STRIPS OR 4 STRIPS SP
-5 CH OR 3 CH SP
-5 STRIPS OR 3 STRIPS SP
-6 CH OR 2 CH SP
-7 CH OR 1 CH SP
-7 STRIPS OR 1 STRIPS SP
-7 UP COMBO
-8 SPICY 12 ORGINAL
-8 SPICY 4 ORGINAL
-8 SPICY 8 ORGINAL
-CUT
-DELIVERY CHARGES 7
-DELIVERY CHARGES 9
-DIET PEPSI COMBO
-Extra Greenpaper
-Extra Icebearge
-Extra Jalapino
-Extra Mayo
-Extra Onion
-Extra Pickles
-Extra Sauce
-Extra Tomato
-GO WATER.
-LITER 7UP Combo
-LITER MIRINDA Combo
-LITER PEPSI Combo
-MIRANDA COMBO
-Mountain Dew COMBO
-NO BREAST
-NO ICE
-NO LEG
-NO THIGH
-NO WING
-PEPSI COMBO
-QUICK NORMAL Employees
-QUICK Spicy Employees
-QUICK Spicy Maintenance
-Without BBQ
-Without Chesses
-Without Greenpaper
-Without Icebearge
-Without Jalapino
-Without Mayo
-Without Onion
-Without Pickles
-Without Sause
-Without Terky
-Without Tomato`;
-
-// Demo Data extracted from prompt (Mockup for REST vs POS)
-const DEMO_POS_DATA = `Item | Qty Sold
-ULTIMATE Spicy | 47404
-Daily Spicy Meal | 60539
-Daily Original Meal | 35998
-Ultimate S Noon Offers | 10369
-Daily Spicy Meal Noon | 22176
-DAILY OFFER Spicy Meal | 5468
-DAILY OFFER Original Meal | 4850
-SUPER MEAL Original | 3424
-SUPER MEAL Spicy | 3060
-SAVING MEAL Original | 3385
-SAVING MEAL Spicy | 3325
-Daily MIX Meal | 4514
-Daily MIX Meal Noon | 4403
-Daily Original Meal Noon | 4394
-BUCKET MEAL Spicy | 1093
-IDEAL MEAL Original | 765
-SUPER MEAL - MIX | 1214
-DAILY OFFER Original Mea | 1338
-IDEAL MEAL Spicy | 663
-DAILY OFFER MIX Meal | 1372
-TWIN BEEF BURGER | 2056`;
-
-const DEMO_REST_DATA = `Item | Qty
-ULTIMATE Spicy | 47500
-Daily Spicy Meal | 60300
-Daily Original Meal | 36000
-Ultimate S Noon Offers | 10300
-Daily Spicy Meal Noon | 22150
-DAILY OFFER Spicy Meal | 5400
-DAILY OFFER Original Meal | 4850
-SUPER MEAL Original | 3400
-SUPER MEAL Spicy | 3000
-SAVING MEAL Original | 3385
-SAVING MEAL Spicy | 3325
-Daily MIX Meal | 4514
-Daily MIX Meal Noon | 4403
-Daily Original Meal Noon | 4394
-BUCKET MEAL Spicy | 1093
-IDEAL MEAL Original | 765
-SUPER MEAL - MIX | 1214
-DAILY OFFER Original Mea | 1338
-IDEAL MEAL Spicy | 663
-DAILY OFFER MIX Meal | 1372
-TWIN BEEF BURGER | 2056`;
-
-// --- 2. GLOBAL STATE ---
-const state = {
-    masterData: [],
-    restData: [],
-    posData: [],
-    results: [],
-    currentBranch: "",
-    matrix: [],
-    
-    mapping: {
-        "daily spicy meal noon": "Daily Spicy Meal",
-        "daily spicy meal": "Daily Spicy Meal",
-        "**spicy fries**": "Spicy - FRIES",
-        "**not spicy fries**": "FRENCH FRIES SMALL",
-        "extra chesses": "EXTRA CHEESE",
-    }
-};
-
-let volumeChartInstance = null;
-let varianceChartInstance = null;
-
-// --- 3. DARK MODE ---
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-}
-
-// --- 4. STORAGE & PARSING ---
-const getStorageKey = (type, branch) => `RECON_${type}_${branch}`;
-const loadData = (type, branch) => localStorage.getItem(getStorageKey(type, branch));
-const saveData = (type, branch, text) => localStorage.setItem(getStorageKey(type, branch), text);
-
-function parseText(rawText) {
-    if (!rawText) return [];
-    const rows = [];
-    const lines = rawText.split('\n');
-    for (let line of lines) {
-        if (!line.trim()) continue;
-        const parts = line.split('|').map(p => p.trim());
-        let name = "Unknown";
-        let qty = 0;
-
-        if (parts.length === 1 && parts[0].length > 0 && !line.includes("Total Item Sales")) {
-            name = parts[0];
-            qty = 0;
-        } else {
-            parts.forEach(p => {
-                const val = parseInt(p);
-                if (!isNaN(val)) { qty = val; }
-                else if (p.length > 1 && p !== "HEAD") { name = p; }
-            });
-        }
-        if (name !== "Unknown" && name !== "HEAD") {
-            rows.push({ name, qty: isNaN(qty) ? 0 : qty });
-        }
-    }
-    return rows;
-}
-
-// --- 5. TOAST SYSTEM ---
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    let icon = 'ℹ️';
-    if(type === 'success') icon = '✅';
-    if(type === 'error') icon = '❌';
-    toast.innerHTML = `<span>${icon}</span> ${message}`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.classList.add('show'); }, 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
-
-// --- 6. SMART EXCEL UPLOAD ---
-async function uploadExcel(input, type) {
-    const file = input.files[0];
-    if (!file) return;
-    
-    input.parentElement.style.borderColor = "var(--primary)";
-    input.parentElement.style.background = "var(--bg-body)";
-    input.parentElement.querySelector('span:last-child').innerText = "Reading...";
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            
-            if (workbook.SheetNames.length === 0) {
-                showToast("Excel file is empty!", "error");
-                return;
-            }
-            const firstSheetName = workbook.SheetNames[0];
-            const firstSheet = workbook.Sheets[firstSheetName];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-            if (jsonData.length === 0) {
-                showToast("No data found in Excel!", "error");
-                return;
-            }
-
-            const parsed = [];
-            jsonData.forEach(row => {
-                const keys = Object.keys(row);
-                
-                // SMART DETECTION FOR HEADERS
-                let nameKey = keys.find(k => k.toLowerCase().includes('item') || k.toLowerCase().includes('name') || k.toLowerCase().includes('description'));
-                let qtyKey = keys.find(k => k.toLowerCase().includes('qty') || k.toLowerCase().includes('quantity') || k.toLowerCase().includes('sold') || k.toLowerCase().includes('count'));
-
-                // Fallback: Guess based on Value Types
-                if (!nameKey) nameKey = keys[0]; 
-                if (!qtyKey) qtyKey = keys.find(k => typeof row[k] === 'number' && k !== nameKey);
-
-                if (nameKey) {
-                    parsed.push({
-                        name: row[nameKey],
-                        qty: qtyKey ? Number(row[qtyKey]) : 0
-                    });
-                }
-            });
-
-            if (parsed.length === 0) {
-                showToast("Could not parse Excel columns.", "error");
-                return;
-            }
-
-            const textArea = type === 'master' ? document.getElementById('inputMASTER') : (type === 'rest' ? document.getElementById('inputREST' ) : document.getElementById('inputPOS'));
-            textArea.value = `[Loaded ${parsed.length} items from ${file.name}]`;
-            
-            if(type === 'master') state.masterData = parsed;
-            else if(type === 'rest') state.restData = parsed;
-            else if(type === 'pos') state.posData = parsed;
-            
-            processData();
-            showToast(`${parsed.length} items loaded successfully!`, "success");
-            
-            input.parentElement.querySelector('span:last-child').innerText = "File Loaded ✅";
-
-        } catch (error) {
-            console.error(error);
-            showToast("Error reading file: " + error.message, "error");
-            input.parentElement.querySelector('span:last-child').innerText = "Error";
+    <script>
+    /* --- DATA SECTION (Embedded Data) --- */
+    const INVENTORY_DATA = {
+        rawMaterials: [{id:'rm001',name:'CHIX',unit:'pcs'},{id:'rm002',name:'STRIP',unit:'pcs'},{id:'rm003',name:'BEEF BURGER',unit:'pcs'},{id:'rm004',name:'Beef burger 125 g',unit:'pcs'},{id:'rm005',name:'CHIX BURGER',unit:'pcs'},{id:'rm006',name:'ZINGER',unit:'pcs'},{id:'rm007',name:'FRIES',unit:'pcs'},{id:'rm008',name:'CHEESE',unit:'pcs'},{id:'rm009',name:'GARLIC SAUCE',unit:'pcs'},{id:'rm010',name:'SMALL COLESLAW',unit:'pcs'},{id:'rm011',name:'BIG COLESLAW',unit:'pcs'},{id:'rm012',name:'DYNAMITE SAUCE',unit:'pcs'},{id:'rm013',name:'PEPSI CAN',unit:'pcs'},{id:'rm014',name:'PEPSI LITER',unit:'pcs'},{id:'rm015',name:'LARGE JUICE',unit:'pcs'},{id:'rm016',name:'SMALL WATER',unit:'pcs'},{id:'rm017',name:'BUN 4 INCH',unit:'pcs'},{id:'rm018',name:'TORTILA',unit:'pcs'},{id:'rm019',name:'BUN 4.5 INCH',unit:'pcs'},{id:'rm020',name:'BUN 6 INCH',unit:'pcs'},{id:'rm021',name:'SAMOLINA 8 INCH',unit:'pcs'},{id:'rm022',name:'BUN 5',unit:'pcs'},{id:'rm023',name:'NUGGETS',unit:'pcs'},{id:'rm024',name:'SMALL JUICE',unit:'pcs'},{id:'rm025',name:'POP CORN',unit:'pcs'},{id:'rm026',name:'SHAWRMA',unit:'pcs'},{id:'rm027',name:'BASMATI RICE',unit:'kg'},{id:'rm028',name:'KINZA COLA',unit:'pcs'},{id:'rm029',name:'FLOUR',unit:'kg'},{id:'rm030',name:'LETTUCE',unit:'kg'},{id:'rm031',name:'MAYONNAISE',unit:'kg'},{id:'rm032',name:'KETCHUP',unit:'pcs'},{id:'rm033',name:'SHORTING (Oil)',unit:'kg'},{id:'rm034',name:'STEAK',unit:'pcs'}],
+        menuItems: [
+            {id:'M001',name:'KIDS MEAL CRISPY',category:'KIDS MEAL',oilPerUnit:0,flourPerUnit:0,price:15},{id:'M002',name:'KIDS MEAL POP CORN',category:'KIDS MEAL',oilPerUnit:0,flourPerUnit:0,price:12},{id:'M309',name:'KIDS MEAL NUGGETS',category:'KIDS MEAL',oilPerUnit:18,flourPerUnit:12,price:14},
+            {id:'M003',name:'Daily Original Meal',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:25},{id:'M004',name:'DAILY OFFER Original Meal',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:22},{id:'M005',name:'SUPER MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:35},{id:'M006',name:'SAVING MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:18},{id:'M007',name:'Daily Original Meal Noon',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:24},{id:'M008',name:'IDEAL MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M009',name:'DAILY OFFER Original Meal',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:22},{id:'M010',name:'MEGA MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:45},{id:'M011',name:'BUCKET MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:55},{id:'M012',name:'SPECIAL FAMILY Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:65},{id:'M013',name:'CHICKEN STRIPS Original Meal',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:28},{id:'M014',name:'1/2 CHICKEN Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:26},{id:'M015',name:'STRIPS FAMILY Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:60},{id:'M016',name:'Steak Combo',category:'Combo Meal Original',oilPerUnit:0,flourPerUnit:0,price:30},{id:'M017',name:'CHICKEN STRIPS Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:18},{id:'M018',name:'ULTIMATE Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:40},{id:'M019',name:'20 PCS PACKET Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:75},{id:'M020',name:'NORMAL PCS',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:35},{id:'M021',name:'PKT STRIPS 20 Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:70},{id:'M022',name:'12 PCS PACKET Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:50},{id:'M023',name:'ECONOMY MEAL Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:16},{id:'M024',name:'Ultimate Noon Offers',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:38},{id:'M025',name:'16 PCS PACKET Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:60},{id:'M026',name:'QUICK NORMAL',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:12},{id:'M027',name:'CHICKEN DAY Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:22},{id:'M028',name:'TWIST BOX Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:32},{id:'M029',name:'DEAL FOR ONE (TWIST BOX) Original',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:20},{id:'M030',name:'Golden 4 meal Normal',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:18},{id:'M031',name:'CHICKEN DAY Original Noon',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:21},{id:'M032',name:'DAILY OFFER Original Meal Noon',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:21},{id:'M033',name:'4 pcs chicken Original M',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:17},{id:'M034',name:'Daily Original Meal Smile',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:24},{id:'M035',name:'QUICK NORMAL Employees',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:10},{id:'M036',name:'QUICK NORMAL Maintenance',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:10},{id:'M037',name:'QUICK NORMAL Maintenance',category:'Combo Meal Original',oilPerUnit:20,flourPerUnit:15,price:10},
+            {id:'M038',name:'Daily MIX Meal',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:25},{id:'M039',name:'Daily MIX Meal Noon',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:24},{id:'M040',name:'SUPER MEAL - MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:35},{id:'M041',name:'DAILY OFFER MIX Meal',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:22},{id:'M042',name:'BUCKET MEAL MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:55},{id:'M043',name:'IDEAL MEAL MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M044',name:'MEGA MEAL MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:45},{id:'M045',name:'SPECIAL FAMILY MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:65},{id:'M046',name:'20 PCS PACKET MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:75},{id:'M047',name:'STRIPS FAMILY - MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:60},{id:'M048',name:'12 PCS PACKET MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:50},{id:'M049',name:'ECONOMY MEAL-MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:16},{id:'M050',name:'16 PCS PACKET MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:60},{id:'M051',name:'ULTIMATE MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:40},{id:'M052',name:'PKT STRIPS 20 MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:70},{id:'M053',name:'Ultimate Noon Offers',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:38},{id:'M054',name:'CHICKEN DAY MIX',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:22},{id:'M055',name:'CHICKEN DAY MIX Noon',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:21},{id:'M056',name:'Golden 4 meal mix',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:18},{id:'M057',name:'Daily MIX Meal Smile',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:24},{id:'M058',name:'4 pcs chicken MIX Meal @ 5 AED',category:'Combo Meal MIX',oilPerUnit:20,flourPerUnit:15,price:5},
+            {id:'M080',name:'ULTIMATE Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:42},{id:'M081',name:'Daily Spicy Meal',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:27},{id:'M082',name:'Ultimate S Noon Offers',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:40},{id:'M083',name:'Daily Spicy Meal Noon',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:26},{id:'M084',name:'DAILY OFFER Spicy Meal',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:24},{id:'M085',name:'SUPER MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:37},{id:'M086',name:'SAVING MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:19},{id:'M087',name:'BUCKET MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:57},{id:'M088',name:'IDEAL MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M089',name:'MEGA MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:47},{id:'M090',name:'Crispy Strips Spicy Meal',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M091',name:'SPECIAL FAMILY Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:67},{id:'M092',name:'1/2 CHICKEN Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M093',name:'Ultimate S Careem Offers',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:39},{id:'M094',name:'20 PCS PACKET Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:77},{id:'M095',name:'STRIPS FAMILY Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:62},{id:'M096',name:'SPICY PCS',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:37},{id:'M097',name:'12 PCS PACKET Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:52},{id:'M098',name:'16 PCS PACKET Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:62},{id:'M099',name:'TWIST BOX SPICY',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:34},{id:'M100',name:'CHICKEN DAY SPICY',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:24},{id:'M101',name:'ECONOMY MEAL Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M102',name:'QUICK SPICY',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:13},{id:'M103',name:'PKT STRIPS 20 Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:72},{id:'M104',name:'DEAL FOR ONE (TWIST BOX) SPIC',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:22},{id:'M105',name:'Golden 4 meal Spicy',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:19},{id:'M106',name:'CHICKEN DAY SPICY Noon',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:23},{id:'M107',name:'DAILY OFFER Spicy Meal Noon',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:23},{id:'M108',name:'4 pcs chicken Spicy Meal@ 5 AED',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:5},{id:'M109',name:'DAILY OFFER Spicy Smile',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:26},{id:'M110',name:'QUICK Spicy Employees',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:11},{id:'M111',name:'QUICK SPICY Maintenance',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:11},{id:'M112',name:'QUICK SPICY Maintenance',category:'Combo Meal Spicy',oilPerUnit:25,flourPerUnit:18,price:11},
+            {id:'M113',name:'TWIN BEEF BURGER',category:'Combo Sandwich',oilPerUnit:0,flourPerUnit:0,price:28},{id:'M114',name:'Twin Twist Original',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M115',name:'Twin Twist Spicy',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M116',name:'Twin Suprem Spicy',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:34},{id:'M117',name:'Twin SUPREM MIX',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M118',name:'Twin Supreme Meal',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:35},{id:'M119',name:'Twin Chicken Burger',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M120',name:'MAXI CHICKEN DOUBLE COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:38},{id:'M121',name:'Volcano Combo Double',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:38},{id:'M122',name:'TWIN SHAWARMA MEAL',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M123',name:'Twin Twist MIX',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M124',name:'MAXI CHICKEN SINGLE COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M125',name:'Volcano Combo Single',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M126',name:'TORNADO SP COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M127',name:'BEEF BURGER COMBO',category:'Combo Sandwich',oilPerUnit:0,flourPerUnit:0,price:26},{id:'M128',name:'SUPREM OR COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M129',name:'TORNADO OR COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M130',name:'SUPER CRUNCHY OR COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M131',name:'TWIST OR COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M132',name:'SUPER CRUNCHY SP COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M133',name:'TWIST SP COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M134',name:'FAJITA COMBO',category:'Combo Sandwich',oilPerUnit:0,flourPerUnit:0,price:28},{id:'M135',name:'SUPREME SP COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M136',name:'CHICKEN BUEGER COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M137',name:'MAXI CHICKEN DOUBLE COMB',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:38},{id:'M138',name:'FAJITA Spicy COMBO',category:'Combo Sandwich',oilPerUnit:0,flourPerUnit:0,price:30},{id:'M139',name:'MAXI CHICKEN SINGLE COMB',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M140',name:'BUFFALO MEAL',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:32},{id:'M141',name:'DYNAMITE SPY COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M142',name:'DYNAMITE OR COMBO',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M143',name:'Twin Twist Spicy Noon',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:30},{id:'M144',name:'Twin Twist MIX Noon',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M145',name:'Twin Twist Original Noon',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:28},{id:'M146',name:'TWIST SP COMBO employees',category:'Combo Sandwich',oilPerUnit:25,flourPerUnit:18,price:25},
+            {id:'M059',name:'Spicy Fries',category:'Side Order',oilPerUnit:30,flourPerUnit:0,price:6},{id:'M060',name:'Up Charge',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M061',name:'Extra CHEESE',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M062',name:'Extra BBQ',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M063',name:'Not Spicy Fries',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M064',name:'CUT',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M065',name:'Extra Greenpaper',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M066',name:'Extra Icebearge',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M067',name:'Extra Jalapino',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M068',name:'Extra Mayo',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M069',name:'Extra Onion',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M070',name:'Extra Pickles',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M071',name:'Extra Sauce',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M072',name:'Extra Terky',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M073',name:'Extra Tomato',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M074',name:'NO BREAST',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M075',name:'NO ICE',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M076',name:'NO LEG',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M077',name:'NO THIGH',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M078',name:'NO WING',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M079',name:'Plane',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M147',name:'DELIVERY CHARGES 5',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M148',name:'Upsize Large Fries And Large Pep',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M149',name:'Go Large',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M150',name:'GO KANZA',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:8},{id:'M151',name:'GO Family KANZA',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:20},{id:'M152',name:'Up Charge',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M153',name:'DELIVERY CHARGES 3',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M154',name:'GO JUICE',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:7},{id:'M155',name:'GO Shani',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:6},{id:'M156',name:'Extra BBQ',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M157',name:'10 STRIPS OR 10 STRIPS S',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:35},{id:'M158',name:'10 STRIPS OR 10 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M159',name:'12 SPICY 8 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M160',name:'16 SPICY 4 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M161',name:'1 CH OR 7 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M162',name:'1 STRIPS OR 19 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:40},{id:'M163',name:'1STRIPS OR 7 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M164',name:'2 CH OR 6 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M165',name:'2LITER 7UP Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M166',name:'2LITER MIRINDA Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M167',name:'2LITER PEPSI Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M168',name:'2 STRIPS OR 6 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M169',name:'3 CH OR 5 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M170',name:'3 STRIPS OR 17 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:40},{id:'M171',name:'3 STRIPS OR 17 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:42},{id:'M172',name:'3 STRIPS OR 5 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M173',name:'4 CH OR 4 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M174',name:'4 ORGINAL 12 SPICY',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M175',name:'4 SPICY 12 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M176',name:'4 SPICY 16 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M177',name:'4 SPICY 8 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M178',name:'4 STRIPS OR 16 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:35},{id:'M179',name:'4 STRIPS OR 16 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M180',name:'4 STRIPS OR 4 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M181',name:'5 CH OR 3 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M182',name:'5 STRIPS OR 15 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:35},{id:'M183',name:'5 STRIPS OR 15 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M184',name:'5 STRIPS OR 3 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M185',name:'6 CH OR 2 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M186',name:'6 STRIPS OR 14 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:35},{id:'M187',name:'6 STRIPS OR 14 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M188',name:'6 STRIPS OR 2 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M189',name:'7 CH OR 1 CH SP',category:'Side Order',oilPerUnit:20,flourPerUnit:15,price:30},{id:'M190',name:'7 STRIPS OR 13 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:35},{id:'M191',name:'7 STRIPS OR 13 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M192',name:'7 STRIPS OR 1 STRIPS SP',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:30},{id:'M193',name:'7 UP COMBO',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M194',name:'8 SPICY 12 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M195',name:'8 SPICY 4 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M196',name:'8 SPICY 8 ORGINAL',category:'Side Order',oilPerUnit:25,flourPerUnit:18,price:45},{id:'M197',name:'8 STRIPS OR 12 STRIPS SPY',category:'Side Order',oilPerUnit:15,flourPerUnit:10,price:37},{id:'M198',name:'DELIVERY CHARGES 7',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:7},{id:'M199',name:'DELIVERY CHARGES 9',category:'Side Order',oilPerUnit:0,flourPerUnit:0,price:9},{id:'M200',name:'DIET PEPSI COMBO',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M201',name:'GO WATER',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M202',name:'LITER 7UP Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M203',name:'LITER MIRINDA Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M204',name:'LITER PEPSI Combo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M205',name:'MIRANDA COMBO',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M206',name:'Mountain Dew COMBO',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M207',name:'Notes',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M208',name:'PEPSI COMBO',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M209',name:'Plane',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M210',name:'Without BBQ',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M211',name:'Without CHEESE',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M212',name:'Without Greenpaper',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M213',name:'Without Icebearge',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M214',name:'Without Jalapino',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M215',name:'Without Mayo',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M216',name:'Without Onion',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M217',name:'Without Pickles',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M218',name:'Without Sause',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M219',name:'Without Terky',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},{id:'M220',name:'Without Tomato',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:0},
+            {id:'M221',name:'BEEF BURGER SANDWICH',category:'Sandwich',oilPerUnit:0,flourPerUnit:0,price:18},{id:'M222',name:'TWIST Spicy SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M223',name:'TWIST Original SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M224',name:'FAJITA SANDWICHES',category:'Sandwich',oilPerUnit:0,flourPerUnit:0,price:18},{id:'M225',name:'SUPER CRUNCHY SP SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M226',name:'FAJITA Spicy SANDWICHES',category:'Sandwich',oilPerUnit:0,flourPerUnit:0,price:20},{id:'M227',name:'SHAWRMA Original SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:15},{id:'M228',name:'TORNADO Original SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:15},{id:'M229',name:'SUPER CRUNCHY OR SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M230',name:'SUPREME Original SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M231',name:'CHICKEN BURGER SANDWICH',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:16},{id:'M232',name:'MAX DOUBLE SANDWICH',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:25},{id:'M233',name:'DYNAMITE Original SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:16},{id:'M234',name:'TORNADO Spicy SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M235',name:'Steak Sandwich',category:'Sandwich',oilPerUnit:0,flourPerUnit:0,price:20},{id:'M236',name:'SHAWRMA Spicy SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M237',name:'SUPREME Spicy SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M238',name:'Volcano Sandwich Double',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:25},{id:'M239',name:'BUFFALO SANDWICH',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M240',name:'DYNAMITE Spicy SANDWICHES',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M241',name:'Volcano Sandwich Single',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M242',name:'SUPREME Original SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M243',name:'TORNADO Original SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:15},{id:'M244',name:'SUPER CRUNCHY OR SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M245',name:'SUPER CRUNCHY SP SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M246',name:'SHAWRMA Original SANDWIC',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:15},{id:'M247',name:'DYNAMITE Original SANDW',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:16},{id:'M248',name:'TORNADO Spicy SANDWICHE',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M249',name:'SUPREME Spicy SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M250',name:'DYNAMITE Spicy SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M251',name:'SHAWRMA Spicy SANDWI',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M252',name:'MAX SINGLE SANDWICH',category:'Sandwich',oilPerUnit:25,flourPerUnit:18,price:20},
+            {id:'M253',name:'FRENCH FRIES SMALL',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M254',name:'GRAVY SAUCE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M255',name:'Big Coleslaw',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M256',name:'WHITE RICE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M257',name:'FRENCH FRIES LARGE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:7},{id:'M258',name:'Small Coleslaw',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M259',name:'GARLIC SMALL',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M260',name:'CRISPY RICE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M261',name:'Spicy FRIES',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:6},{id:'M262',name:'HOT CHEDAR CHEESE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M263',name:'SPICED RICE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M264',name:'CRISPY LARGE Spicy',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:18},{id:'M265',name:'DYNAMITE SAUCE',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M266',name:'FRENCH FRIES BOX',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:10},{id:'M267',name:'CRISPY LARGE Original',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:17},{id:'M268',name:'BUN',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:1},{id:'M269',name:'6 PCS NUGGETS',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:10},{id:'M270',name:'CRISPY SMALL Spicy',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:12},{id:'M271',name:'Cheese',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M272',name:'CRISPY SMALL Original',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:11},{id:'M273',name:'SMALL POP CORN',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M274',name:'LARGE POP CORN',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:8},{id:'M275',name:'CHILI CHEESE NUGGETS',category:'SNACK MEAL',oilPerUnit:18,flourPerUnit:12,price:12},{id:'M276',name:'RICE MEAL Original',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:14},{id:'M277',name:'RICE MEAL Spicy',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:15},{id:'M278',name:'SNACK SANDWICH Spicy',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:18},{id:'M279',name:'SNACK BOX Spicy',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:20},{id:'M280',name:'Crispy Snack Spicy Meal',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:22},{id:'M281',name:'SNACK SANDWICH Original',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:17},{id:'M282',name:'SNACK BOX Original',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:19},{id:'M283',name:'Crispy Snack Original Meal',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:21},{id:'M284',name:'Crispy Snack Original Me',category:'SNACK MEAL',oilPerUnit:25,flourPerUnit:18,price:21},{id:'M285',name:'RICE MEAL Original employees',category:'SNACK MEAL',oilPerUnit:0,flourPerUnit:0,price:10},
+            {id:'M286',name:'PEPSI S',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M287',name:'LITER PEPSI',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M288',name:'WATER 500ML',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:2},{id:'M289',name:'Mountain Dew S',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M290',name:'LITER Mountain Dew',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M291',name:'KANZA',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M292',name:'MIRINDA S',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M293',name:'7UP S',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M294',name:'LITER MIRINDA',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M295',name:'LITER 7UP',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M296',name:'DIET PEPSI S',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M297',name:'LARGE PEPSI',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:4},{id:'M298',name:'SMALL JUICE',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M299',name:'JUICE LAKNOR LARGE',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M300',name:'LARGE DEW',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M301',name:'LARGE MIRINDA',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M302',name:'LARGE 7 UP',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:5},{id:'M303',name:'Mountain Dew M',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M304',name:'DIET PEPSI M',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M305',name:'MIRINDA M',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M306',name:'PEPSI M',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M307',name:'7UP M',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:3},{id:'M308',name:'Shani Can',category:'Soft Drinks',oilPerUnit:0,flourPerUnit:0,price:2}
+        ],
+        recipes: {
+            'M001':[{id:'rm002',qty:3},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M002':[{id:'rm025',qty:14},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm024',qty:1},{id:'rm030',qty:0.02}],'M309':[{id:'rm023',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm024',qty:1},{id:'rm030',qty:0.02}],
+            'M038':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M039':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M040':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm010',qty:2},{id:'rm013',qty:1},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M041':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M042':[{id:'rm001',qty:8},{id:'rm002',qty:8},{id:'rm007',qty:5},{id:'rm009',qty:2},{id:'rm014',qty:1},{id:'rm030',qty:0.08}],'M043':[{id:'rm001',qty:12},{id:'rm007',qty:5},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm014',qty:1},{id:'rm017',qty:3},{id:'rm030',qty:0.08}],'M044':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M045':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M046':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M047':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M048':[{id:'rm001',qty:12},{id:'rm007',qty:3},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm017',qty:3},{id:'rm030',qty:0.06}],'M049':[{id:'rm001',qty:20},{id:'rm003',qty:2},{id:'rm005',qty:2},{id:'rm007',qty:5},{id:'rm008',qty:4},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm015',qty:1},{id:'rm017',qty:5},{id:'rm019',qty:4},{id:'rm030',qty:0.06},{id:'rm031',qty:0.08}],'M050':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M051':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M052':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M053':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M054':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M055':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M056':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm030',qty:0.01}],'M058':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],
+            'M003':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M004':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M005':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm010',qty:2},{id:'rm013',qty:1},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M006':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm010',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M007':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M008':[{id:'rm001',qty:12},{id:'rm007',qty:5},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm014',qty:1},{id:'rm017',qty:3},{id:'rm030',qty:0.08}],'M009':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M010':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M011':[{id:'rm001',qty:8},{id:'rm002',qty:8},{id:'rm007',qty:5},{id:'rm009',qty:2},{id:'rm014',qty:1},{id:'rm030',qty:0.08}],'M012':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M013':[{id:'rm002',qty:5},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M014':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.01}],'M015':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M016':[{id:'rm034',qty:1},{id:'rm005',qty:1},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.2},{id:'rm031',qty:0.2}],'M018':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M019':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M020':[{id:'rm001',qty:1}],'M021':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M022':[{id:'rm001',qty:12},{id:'rm007',qty:3},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm017',qty:3},{id:'rm030',qty:0.06}],'M023':[{id:'rm001',qty:20},{id:'rm003',qty:2},{id:'rm005',qty:2},{id:'rm007',qty:5},{id:'rm008',qty:4},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm015',qty:1},{id:'rm017',qty:5},{id:'rm019',qty:4},{id:'rm030',qty:0.06},{id:'rm031',qty:0.08}],'M024':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M025':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M026':[{id:'rm001',qty:3},{id:'rm007',qty:1},{id:'rm030',qty:0.01}],'M027':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M028':[{id:'rm001',qty:2},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.01}],'M029':[{id:'rm001',qty:2},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.01}],'M030':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm030',qty:0.01}],'M031':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M032':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M033':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],
+            'M080':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M081':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M082':[{id:'rm001',qty:12},{id:'rm009',qty:3},{id:'rm030',qty:0.03}],'M083':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M084':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M085':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm010',qty:2},{id:'rm013',qty:1},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M086':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm010',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M087':[{id:'rm001',qty:8},{id:'rm002',qty:8},{id:'rm007',qty:5},{id:'rm009',qty:2},{id:'rm014',qty:1},{id:'rm030',qty:0.08}],'M088':[{id:'rm001',qty:12},{id:'rm007',qty:5},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm014',qty:1},{id:'rm017',qty:3},{id:'rm030',qty:0.08}],'M089':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M090':[{id:'rm002',qty:5},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],'M091':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M092':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.01}],'M094':[{id:'rm001',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm017',qty:5},{id:'rm030',qty:0.08}],'M095':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm014',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M096':[{id:'rm001',qty:1}],'M097':[{id:'rm001',qty:12},{id:'rm007',qty:3},{id:'rm009',qty:3},{id:'rm010',qty:3},{id:'rm017',qty:3},{id:'rm030',qty:0.06}],'M098':[{id:'rm001',qty:16},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M099':[{id:'rm001',qty:2},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.01}],'M100':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M101':[{id:'rm001',qty:20},{id:'rm003',qty:2},{id:'rm005',qty:2},{id:'rm007',qty:5},{id:'rm008',qty:4},{id:'rm009',qty:5},{id:'rm011',qty:1},{id:'rm014',qty:2},{id:'rm015',qty:1},{id:'rm017',qty:5},{id:'rm019',qty:4},{id:'rm030',qty:0.06},{id:'rm031',qty:0.08}],'M102':[{id:'rm001',qty:3},{id:'rm007',qty:1},{id:'rm030',qty:0.01}],'M103':[{id:'rm002',qty:20},{id:'rm007',qty:5},{id:'rm009',qty:4},{id:'rm011',qty:1},{id:'rm017',qty:4},{id:'rm030',qty:0.08}],'M104':[{id:'rm001',qty:2},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.02},{id:'rm031',qty:0.02}],'M105':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm030',qty:0.01}],'M106':[{id:'rm001',qty:8},{id:'rm009',qty:2},{id:'rm030',qty:0.02}],'M107':[{id:'rm001',qty:8},{id:'rm007',qty:2},{id:'rm009',qty:2},{id:'rm017',qty:2},{id:'rm030',qty:0.04}],'M108':[{id:'rm001',qty:4},{id:'rm007',qty:1},{id:'rm009',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1},{id:'rm030',qty:0.02}],
+            'M113':[{id:'rm003',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm019',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M114':[{id:'rm002',qty:4},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M115':[{id:'rm002',qty:4},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M116':[{id:'rm002',qty:4},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm020',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M117':[{id:'rm002',qty:4},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm020',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M118':[{id:'rm002',qty:4},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm020',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M119':[{id:'rm005',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm019',qty:2},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M120':[{id:'rm005',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M121':[{id:'rm004',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:2},{id:'rm013',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M122':[{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:2},{id:'rm026',qty:6},{id:'rm030',qty:0.03},{id:'rm031',qty:0.04}],'M124':[{id:'rm005',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M125':[{id:'rm004',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M126':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M127':[{id:'rm003',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M128':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M129':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M130':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M131':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M132':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M133':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M134':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M135':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M136':[{id:'rm005',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M138':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M140':[{id:'rm006',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M141':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M142':[{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],
+            'M221':[{id:'rm003',qty:1},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M222':[{id:'rm002',qty:2},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M223':[{id:'rm002',qty:2},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M224':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M225':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M226':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M227':[{id:'rm018',qty:1},{id:'rm026',qty:3},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M228':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M229':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M230':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M231':[{id:'rm005',qty:1},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M232':[{id:'rm005',qty:2},{id:'rm008',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M233':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M234':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M235':[{id:'rm034',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.1}],'M236':[{id:'rm018',qty:1},{id:'rm026',qty:3},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M237':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M238':[{id:'rm004',qty:2},{id:'rm008',qty:2},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M239':[{id:'rm006',qty:1},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M240':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M241':[{id:'rm004',qty:1},{id:'rm008',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M242':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M243':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M244':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M245':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm019',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M246':[{id:'rm018',qty:1},{id:'rm026',qty:3},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M247':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M248':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M249':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm020',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M250':[{id:'rm002',qty:2},{id:'rm008',qty:1},{id:'rm018',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M251':[{id:'rm018',qty:1},{id:'rm026',qty:3},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],'M252':[{id:'rm005',qty:1},{id:'rm008',qty:1},{id:'rm022',qty:1},{id:'rm030',qty:0.015},{id:'rm031',qty:0.02}],
+            'M276':[{id:'rm001',qty:2},{id:'rm013',qty:1},{id:'rm027',qty:0.077}],'M277':[{id:'rm001',qty:2},{id:'rm013',qty:1},{id:'rm027',qty:0.077}],'M278':[{id:'rm001',qty:1},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1}],'M279':[{id:'rm001',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1}],'M280':[{id:'rm001',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1}],'M281':[{id:'rm001',qty:1},{id:'rm002',qty:2},{id:'rm007',qty:1},{id:'rm008',qty:1},{id:'rm013',qty:1},{id:'rm019',qty:1}],'M282':[{id:'rm001',qty:2},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1}],'M283':[{id:'rm001',qty:1},{id:'rm002',qty:3},{id:'rm007',qty:1},{id:'rm013',qty:1},{id:'rm017',qty:1}]
         }
     };
-    reader.readAsArrayBuffer(file);
-}
 
-// --- 7. DEMO DATA LOADER ---
-function loadDemoData() {
-    document.getElementById('branchSelect').value = "Demo Branch";
-    state.currentBranch = "Demo Branch";
-    
-    document.getElementById('inputMASTER').value = PROVIDED_MASTER_DATA;
-    document.getElementById('inputREST').value = DEMO_REST_DATA;
-    document.getElementById('inputPOS').value = DEMO_POS_DATA;
-
-    state.masterData = parseText(PROVIDED_MASTER_DATA);
-    state.restData = parseText(DEMO_REST_DATA);
-    state.posData = parseText(DEMO_POS_DATA);
-    
-    processData();
-    showToast("Demo Data Loaded Successfully!", "success");
-}
-
-// --- 8. CHARTS & KPI ---
-function updateDashboardCharts() {
-    if(state.results.length === 0) return;
-    const totalRest = parseInt(document.getElementById('kpi-rest').innerText.replace(/,/g, ''));
-    const totalPos = parseInt(document.getElementById('kpi-pos').innerText.replace(/,/g, ''));
-    
-    // Destroy old charts
-    if(volumeChartInstance) volumeChartInstance.destroy();
-    if(varianceChartInstance) varianceChartInstance.destroy();
-
-    // Volume Chart
-    const ctx1 = document.getElementById('volumeChart').getContext('2d');
-    volumeChartInstance = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: ['REST Stock', 'POS Sales'],
-            datasets: [{
-                label: 'Volume',
-                data: [totalRest, totalPos],
-                backgroundColor: ['#3b82f6', '#10b981'],
-                borderRadius: 6,
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
-    });
-
-    // Variance Chart
-    const topVariances = [...state.results].sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 10);
-    const ctx2 = document.getElementById('varianceChart').getContext('2d');
-    varianceChartInstance = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: topVariances.map(r => r.name),
-            datasets: [{
-                label: 'Variance',
-                data: topVariances.map(r => r.d),
-                backgroundColor: topVariances.map(r => r.d < 0 ? '#ef4444' : '#f59e0b'),
-                borderRadius: 4,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: {display:false} }
+    /* --- APP LOGIC --- */
+    class InventorySystem {
+        constructor() {
+            this.rawMaterials = INVENTORY_DATA.rawMaterials;
+            this.recipes = INVENTORY_DATA.recipes;
+            this.menuItems = INVENTORY_DATA.menuItems;
+            this.data = {};
+            this.currentBranch = 'HMD';
+            this.currentDate = '';
+            this.draftRecipe = [];
+            this.editingIngId = null;
+            this.categories = [...new Set(this.menuItems.map(item => item.category))];
+            this.init();
         }
-    });
-}
 
-function calculateHealthScore(totalRest, netDiff) {
-    if (totalRest === 0) return "N/A";
-    const varianceRate = Math.abs(netDiff) / totalRest;
-    
-    if (varianceRate === 0) return "A+";
-    if (varianceRate < 0.005) return "A";
-    if (varianceRate < 0.01) return "B";
-    if (varianceRate < 0.02) return "C";
-    return "F";
-}
+        init() {
+            const now = new Date();
+            this.currentDate = now.toISOString().slice(0, 7);
+            document.getElementById('monthPicker').value = this.currentDate;
+            this.loadData();
+            this.populateDropdowns();
+            this.ensureContext();
+            this.renderIngredientList();
+            if(localStorage.getItem('crispy_theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+            this.showToast("System Ready", "info");
+            this.renderSummaryReport();
+        }
 
-// --- 9. CORE LOGIC ---
-function processData() {
-    const masterText = document.getElementById('inputMASTER').value;
-    const restText = document.getElementById('inputREST').value;
-    const posText = document.getElementById('inputPOS').value;
+        saveData() {
+            try {
+                localStorage.setItem('crispy_inventory_v6_compressed', JSON.stringify({ rawMaterials: this.rawMaterials, menuItems: this.menuItems, categories: this.categories, recipes: this.recipes, data: this.data }));
+            } catch (e) { console.error("Error saving data: " + e.message); }
+        }
 
-    if (masterText && !masterText.includes('[Loaded')) state.masterData = parseText(masterText);
-    if (restText && !restText.includes('[Loaded')) state.restData = parseText(restText);
-    if (posText && !posText.includes('[Loaded')) state.posData = parseText(posText);
+        loadData() {
+            try {
+                const stored = localStorage.getItem('crispy_inventory_v6_compressed');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    this.rawMaterials = parsed.rawMaterials || this.rawMaterials;
+                    this.menuItems = parsed.menuItems || this.menuItems;
+                    this.categories = parsed.categories || this.categories;
+                    this.recipes = parsed.recipes || this.recipes;
+                    this.data = parsed.data || this.data;
+                }
+                this.ensureContext();
+            } catch (e) { this.ensureContext(); }
+        }
 
-    if (state.currentBranch) {
-        saveData('REST', state.currentBranch, document.getElementById('inputREST').value);
-        saveData('POS', state.currentBranch, document.getElementById('inputPOS').value);
-        saveData('MASTER', state.currentBranch, document.getElementById('inputMASTER').value);
-    }
-
-    const nameStandardizer = {};
-    state.masterData.forEach(item => {
-        nameStandardizer[item.name.toLowerCase().trim()] = item.name; 
-    });
-
-    function getDisplayName(rawName) {
-        const key = rawName.toLowerCase().trim();
-        if (nameStandardizer[key]) return nameStandardizer[key];
-        if (state.mapping[key]) return state.mapping[key];
-        return rawName;
-    }
-
-    const merged = {};
-    
-    state.restData.forEach(r => {
-        const displayName = getDisplayName(r.name);
-        if (!merged[displayName]) merged[displayName] = { r: 0, p: 0, name: displayName };
-        merged[displayName].r += r.qty;
-    });
-
-    state.posData.forEach(r => {
-        const displayName = getDisplayName(r.name);
-        if (!merged[displayName]) merged[displayName] = { r: 0, p: 0, name: displayName };
-        merged[displayName].p += r.qty;
-    });
-
-    state.results = [];
-    let totalRest = 0;
-    let totalPos = 0;
-
-    Object.values(merged).forEach(item => {
-        const diff = item.p - item.r;
-        let varPct = 0;
-        if (item.r === 0 && item.p === 0) varPct = 0;
-        else if (item.r === 0) varPct = 100;
-        else varPct = ((diff / item.r) * 100).toFixed(1);
-
-        totalRest += item.r;
-        totalPos += item.p;
-
-        state.results.push({ name: item.name, r: item.r, p: item.p, d: diff, v: varPct });
-    });
-
-    state.results.sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
-
-    updateKPIs(totalRest, totalPos);
-    renderTable();
-    updateDashboardCharts();
-}
-
-function updateKPIs(totalRest, totalPos) {
-    document.getElementById('kpi-rest').innerText = totalRest.toLocaleString();
-    document.getElementById('kpi-pos').innerText = totalPos.toLocaleString();
-    
-    const netDiff = totalPos - totalRest;
-    const diffElem = document.getElementById('kpi-diff');
-    diffElem.innerText = (netDiff > 0 ? "+" : "") + netDiff.toLocaleString();
-    diffElem.className = "kpi-value " + (netDiff > 0 ? "diff-pos" : (netDiff < 0 ? "diff-neg" : "diff-zero"));
-
-    const accuracy = totalRest === 0 ? 100 : ((1 - Math.abs(netDiff) / totalRest) * 100);
-    document.getElementById('kpi-acc').innerText = accuracy.toFixed(1) + "%";
-
-    // Update Health Score
-    const healthScore = calculateHealthScore(totalRest, netDiff);
-    const healthElem = document.getElementById('kpi-health');
-    healthElem.innerText = healthScore;
-    if(healthScore === "A+" || healthScore === "A") healthElem.style.color = "var(--success)";
-    else if(healthScore === "B") healthElem.style.color = "var(--warning)";
-    else healthElem.style.color = "var(--danger)";
-}
-
-// --- 10. UI RENDERERS ---
-function renderMatrix() {
-    const tbody = document.getElementById('matrixBody');
-    tbody.innerHTML = "";
-    state.matrix.forEach((m, index) => {
-        const tr = document.createElement('tr');
-        tr.className = "matrix-row";
-        if(m.branch === state.currentBranch) tr.classList.add('active');
-        
-        tr.onclick = (e) => {
-            if(e.target.tagName === 'BUTTON') return;
-            loadFromMatrix(m.branch);
-        };
-
-        let diffClass = "diff-zero";
-        if (m.diff > 0) diffClass = "diff-pos";
-        if (m.diff < 0) diffClass = "diff-neg";
-
-        tr.innerHTML = `
-            <td><strong>${m.branch}</strong></td>
-            <td>${m.items}</td>
-            <td>${m.rest.toLocaleString()}</td>
-            <td>${m.pos.toLocaleString()}</td>
-            <td class="${diffClass}">${m.diff}</td>
-            <td>${m.acc}</td>
-            <td><button style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; font-weight:600;" onclick="removeMatrix(${index})">Remove</button></td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-function renderTable() {
-    const tbody = document.getElementById('dataTableBody');
-    tbody.innerHTML = "";
-    
-    const showVarianceOnly = document.getElementById('varianceOnlyFilter').checked;
-
-    state.results.forEach((r, index) => {
-        if (showVarianceOnly && r.d === 0) return;
-
-        let diffClass = "diff-zero";
-        if (r.d > 0) diffClass = "diff-pos";
-        if (r.d < 0) diffClass = "diff-neg";
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${r.name}</td>
-            <td style="text-align:center" contenteditable="true" class="editable-cell" onblur="updateCell(${index}, 'r', this)">${r.r}</td>
-            <td style="text-align:center" contenteditable="true" class="editable-cell" onblur="updateCell(${index}, 'p', this)">${r.p}</td>
-            <td style="text-align:center" class="${diffClass}">${r.d > 0 ? '+' : ''}${r.d}</td>
-            <td style="text-align:center; font-size:12px; color:var(--text-muted)">${r.v}%</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-function updateCell(index, type, element) {
-    let newVal = parseInt(element.innerText);
-    if (isNaN(newVal)) newVal = 0;
-    state.results[index][type] = newVal;
-    
-    const row = state.results[index];
-    row.d = row.p - row.r;
-    if (row.r === 0 && row.p === 0) row.v = 0;
-    else if (row.r === 0) row.v = 100;
-    else row.v = ((row.d / row.r) * 100).toFixed(1);
-
-    const rowNode = element.parentNode;
-    rowNode.children[3].innerText = (row.d > 0 ? '+' : '') + row.d;
-    rowNode.children[3].className = "text-center " + (row.d > 0 ? "diff-pos" : (row.d < 0 ? "diff-neg" : "diff-zero"));
-    rowNode.children[4].innerText = row.v + "%";
-    
-    let tRest = 0, tPos = 0;
-    state.results.forEach(x => { tRest += x.r; tPos += x.p; });
-    updateKPIs(tRest, tPos);
-    updateDashboardCharts();
-}
-
-// --- 11. UTILS & ACTIONS ---
-function loadProvidedList() {
-    document.getElementById('inputMASTER').value = PROVIDED_MASTER_DATA;
-    processData();
-    showToast("Clean List Loaded Successfully!", "success");
-}
-
-function switchBranch() {
-    const select = document.getElementById('branchSelect');
-    const branch = select.value;
-    state.currentBranch = branch;
-
-    if (!branch) return; 
-
-    const savedRest = loadData('REST', branch);
-    const savedPos = loadData('POS', branch);
-    const savedMaster = loadData('MASTER', branch);
-
-    document.getElementById('inputREST').value = savedRest || "";
-    document.getElementById('inputPOS').value = savedPos || "";
-    document.getElementById('inputMASTER').value = savedMaster || "";
-
-    if (savedRest || savedPos) {
-        state.restData = savedRest ? parseText(savedRest) : [];
-        state.posData = savedPos ? parseText(savedPos) : [];
-        state.masterData = savedMaster ? parseText(savedMaster) : [];
-        processData();
-        showToast(`Loaded data for ${branch}`, "info");
-    } else {
-        state.restData = [];
-        state.posData = [];
-        state.masterData = [];
-        updateKPIs(0, 0);
-        document.getElementById('dataTableBody').innerHTML = "";
-    }
-    renderMatrix();
-}
-
-function addToMatrix() {
-    if (!state.currentBranch) { showToast("Please select a branch first.", "error"); return; }
-    const totalItems = state.results.length;
-    const totalRest = parseInt(document.getElementById('kpi-rest').innerText.replace(/,/g, ''));
-    const totalPos = parseInt(document.getElementById('kpi-pos').innerText.replace(/,/g, ''));
-    const diff = totalPos - totalRest;
-    const acc = document.getElementById('kpi-acc').innerText;
-
-    const existingIndex = state.matrix.findIndex(m => m.branch === state.currentBranch);
-    if (existingIndex > -1) {
-        state.matrix[existingIndex] = { branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc };
-    } else {
-        state.matrix.push({ branch: state.currentBranch, items: totalItems, rest: totalRest, pos: totalPos, diff, acc });
-    }
-    renderMatrix();
-    showToast("Saved to Matrix!", "success");
-}
-
-function loadFromMatrix(branchName) {
-    const select = document.getElementById('branchSelect');
-    select.value = branchName;
-    switchBranch();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function removeMatrix(index) {
-    state.matrix.splice(index, 1);
-    renderMatrix();
-}
-
-function clearAllData() {
-    if(confirm("Are you sure you want to clear all inputs?")) {
-        document.getElementById('inputMASTER').value = "";
-        document.getElementById('inputREST').value = "";
-        document.getElementById('inputPOS').value = "";
-        state.masterData = [];
-        state.restData = [];
-        state.posData = [];
-        state.results = [];
-        updateKPIs(0, 0);
-        document.getElementById('dataTableBody').innerHTML = "";
-        showToast("Data cleared", "info");
-    }
-}
-
-// Search Listener
-let searchTimeout = null;
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const filter = this.value.toUpperCase();
-        const rows = document.getElementById('dataTableBody').getElementsByTagName('tr');
-        for (let i = 0; i < rows.length; i++) {
-            const td = rows[i].getElementsByTagName('td')[0]; 
-            if (td) {
-                const txtValue = td.textContent || td.innerText;
-                rows[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? "" : "none";
+        ensureContext() {
+            if (!this.data[this.currentBranch]) this.data[this.currentBranch] = {};
+            if (!this.data[this.currentBranch][this.currentDate]) {
+                this.data[this.currentBranch][this.currentDate] = { inventory: {}, sales: [] };
             }
         }
-    }, 300);
-});
 
-// --- 12. REPORTING ---
-function generateReport() {
-    if (state.results.length === 0) { showToast("No data available.", "error"); return; }
-    const branch = state.currentBranch || "Unspecified";
-    const totalItems = state.results.length;
-    const varianceItems = state.results.filter(r => r.d !== 0);
-    const varianceCount = varianceItems.length;
-    const matchedCount = totalItems - varianceCount;
+        changeContext() {
+            this.saveData();
+            this.currentBranch = document.getElementById('branchSelect').value;
+            this.currentDate = document.getElementById('monthPicker').value;
+            this.ensureContext();
+            this.renderInventoryTable();
+            this.renderSalesLog();
+            this.updateDashboard();
+            this.renderProductionReport();
+            this.renderSummaryReport();
+            this.showToast('Context Updated', 'info');
+        }
 
-    document.getElementById('reportMeta').innerText = `Branch: ${branch} | Date: ${new Date().toLocaleDateString()}`;
-    document.getElementById('rptVariance').innerText = varianceCount;
-    document.getElementById('rptMatched').innerText = matchedCount;
+        switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(btn) btn.classList.add('active');
+            if (tabId === 'tab-production') this.renderProductionReport();
+            else if (tabId === 'tab-report') this.renderInventoryTable();
+        }
 
-    const tbody = document.getElementById('reportTableBody');
-    tbody.innerHTML = "";
-    
-    if (varianceItems.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px;'>✅ Perfect Match! No variances found.</td></tr>";
-    } else {
-        varianceItems.forEach(item => {
-            const tr = document.createElement('tr');
-            let diffClass = "diff-zero";
-            if (item.d > 0) diffClass = "diff-pos";
-            if (item.d < 0) diffClass = "diff-neg";
+        toggleTheme() {
+            if(document.body.hasAttribute('data-theme')) {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('crispy_theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('crispy_theme', 'dark');
+            }
+        }
 
-            tr.innerHTML = `
-                <td>${item.name}</td>
-                <td style="text-align:center">${item.r}</td>
-                <td style="text-align:center">${item.p}</td>
-                <td style="text-align:center" class="${diffClass}">${item.d > 0 ? '+' : ''}${item.d}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        showToast(msg, type='info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(type === 'error') toast.style.backgroundColor = 'var(--danger-color)';
+            if(type === 'success') toast.style.backgroundColor = 'var(--success-color)';
+            toast.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">&times;</button>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        populateDropdowns() {
+            const catSelect = document.getElementById('newMenuCategory');
+            catSelect.innerHTML = '';
+            this.categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.innerText = cat; catSelect.appendChild(opt);
+            });
+            const ingSelect = document.getElementById('recipeIngSelect');
+            ingSelect.innerHTML = '';
+            this.rawMaterials.forEach(ing => {
+                const opt = document.createElement('option');
+                opt.value = ing.id; opt.innerText = `${ing.name} (${ing.unit})`; ingSelect.appendChild(opt);
+            });
+            const saleSelect = document.getElementById('saleItemSelect');
+            saleSelect.innerHTML = '<option value="">Select Item...</option>';
+            this.categories.forEach(cat => {
+                const group = document.createElement('optgroup');
+                group.label = cat;
+                const itemsInCat = this.menuItems.filter(m => m.category === cat);
+                itemsInCat.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.innerText = `${item.name} (${item.price || 0} AED)`;
+                    group.appendChild(opt);
+                });
+                saleSelect.appendChild(group);
+            });
+            this.populateItemSelect('ALL');
+        }
+
+        populateItemSelect(filterCat) {
+            const itemSelect = document.getElementById('menuItemSelect');
+            itemSelect.innerHTML = '<option value="">-- Select Existing Item to Edit --</option>';
+            this.categories.forEach(cat => {
+                if (filterCat !== 'ALL' && filterCat !== cat) return;
+                const group = document.createElement('optgroup');
+                group.label = cat;
+                const itemsInCat = this.menuItems.filter(m => m.category === cat);
+                itemsInCat.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.innerText = `${item.name} (AED ${item.price || 0})`;
+                    group.appendChild(opt);
+                });
+                itemSelect.appendChild(group);
+            });
+        }
+
+        onItemSelect(itemId) {
+            if(!itemId) { this.draftRecipe = []; this.renderDraftRecipe(); return; }
+            const item = this.menuItems.find(i => i.id === itemId);
+            if(item) {
+                document.getElementById('newMenuName').value = item.name;
+                document.getElementById('newMenuPrice').value = item.price || 0;
+                this.draftRecipe = this.recipes[itemId] || []; 
+                this.renderDraftRecipe();
+                document.getElementById('menuOilRate').value = item.oilPerUnit || 0;
+                document.getElementById('menuFlourRate').value = item.flourPerUnit || 0;
+            }
+        }
+
+        renderIngredientList() {
+            const tbody = document.getElementById('ingListBody');
+            tbody.innerHTML = '';
+            this.rawMaterials.forEach(ing => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${ing.name}</td><td>${ing.unit}</td><td><button class="btn btn-sm btn-info" onclick="app.startEditIngredient('${ing.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger" onclick="app.removeIngredient('${ing.id}')"><i class="fas fa-trash"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        saveIngredient() {
+            const name = document.getElementById('ingNameInput').value;
+            const unit = document.getElementById('ingUnitInput').value;
+            const id = document.getElementById('editIngId').value;
+            if(!name) return this.showToast('Name required', 'error');
+            if (id) {
+                const ing = this.rawMaterials.find(i => i.id === id);
+                if(ing) { ing.name = name; ing.unit = unit; }
+            } else {
+                this.rawMaterials.push({ id: 'rm' + Date.now(), name, unit });
+            }
+            this.saveData();
+            this.populateDropdowns();
+            this.cancelEditIng();
+        }
+
+        startEditIngredient(id) {
+            const ing = this.rawMaterials.find(i => i.id === id);
+            if(!ing) return;
+            document.getElementById('ingNameInput').value = ing.name;
+            document.getElementById('ingUnitInput').value = ing.unit;
+            document.getElementById('editIngId').value = ing.id;
+            document.getElementById('saveIngBtn').innerText = "Update Ingredient";
+            document.getElementById('cancelEditBtn').style.display = "inline-flex";
+            this.editingIngId = id;
+        }
+
+        cancelEditIng() {
+            document.getElementById('ingNameInput').value = '';
+            document.getElementById('ingUnitInput').value = 'pcs';
+            document.getElementById('editIngId').value = '';
+            document.getElementById('saveIngBtn').innerText = "Add Ingredient";
+            document.getElementById('cancelEditBtn').style.display = "none";
+            this.editingIngId = null;
+        }
+
+        removeIngredient(id) {
+            if(!confirm('Are you sure?')) return;
+            this.rawMaterials = this.rawMaterials.filter(r => r.id !== id);
+            for (let menuId in this.recipes) this.recipes[menuId] = this.recipes[menuId].filter(r => r.id !== id);
+            this.saveData();
+            this.populateDropdowns();
+            this.renderIngredientList();
+        }
+
+        addRecipeLine() {
+            const ingId = document.getElementById('recipeIngSelect').value;
+            const qty = parseFloat(document.getElementById('recipeQty').value);
+            if(!qty) return;
+            const ing = this.rawMaterials.find(r => r.id === ingId);
+            this.draftRecipe.push({ id: ingId, qty, name: ing.name, unit: ing.unit });
+            this.renderDraftRecipe();
+            document.getElementById('recipeQty').value = '';
+        }
+
+        renderDraftRecipe() {
+            const ul = document.getElementById('draftRecipeList');
+            ul.innerHTML = '';
+            this.draftRecipe.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.style.cssText = "padding:5px 10px; border-bottom:1px solid #eee;";
+                li.innerHTML = `<span>${item.name} (${item.qty} ${item.unit})</span> <span style="color:red; cursor:pointer; float:right;" onclick="app.draftRecipe.splice(${index},1); app.renderDraftRecipe();">&times;</span>`;
+                ul.appendChild(li);
+            });
+        }
+
+        saveMenuItem() {
+            const selectedId = document.getElementById('menuItemSelect').value;
+            const name = document.getElementById('newMenuName').value;
+            const category = document.getElementById('newMenuCategory').value;
+            const price = document.getElementById('newMenuPrice').value;
+            const oilRate = parseFloat(document.getElementById('menuOilRate').value) || 0;
+            const flourRate = parseFloat(document.getElementById('menuFlourRate').value) || 0;
+            if (!name) return this.showToast('Item Name required', 'error');
+            let targetId = selectedId;
+            if (selectedId) {
+                const item = this.menuItems.find(i => i.id === selectedId);
+                if (item) {
+                    item.name = name;
+                    item.price = parseFloat(price) || 0;
+                    item.oilPerUnit = oilRate;
+                    item.flourPerUnit = flourRate;
+                    this.recipes[selectedId] = this.draftRecipe;
+                    this.showToast(`Item Updated!`, 'success');
+                }
+            } else {
+                targetId = 'm' + Date.now().toString().slice(-4);
+                this.menuItems.push({ id: targetId, name, category, price: parseFloat(price) || 0, oilPerUnit: oilRate, flourPerUnit: flourRate });
+                this.recipes[targetId] = this.draftRecipe;
+                this.showToast(`New Item Created!`, 'success');
+            }
+            this.saveData();
+            this.populateDropdowns();
+            document.getElementById('newMenuName').value = '';
+            document.getElementById('newMenuPrice').value = 0;
+            document.getElementById('menuOilRate').value = 0;
+            document.getElementById('menuFlourRate').value = 0;
+            document.getElementById('menuItemSelect').value = '';
+            this.draftRecipe = [];
+            this.renderDraftRecipe();
+            this.jumpToDashboardAndSell(targetId);
+        }
+
+        jumpToDashboardAndSell(itemId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-dashboard').classList.add('active');
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            const tabs = Array.from(document.querySelectorAll('.nav-tab'));
+            const dashTab = tabs.find(t => t.getAttribute('onclick').includes('tab-dashboard'));
+            if(dashTab) dashTab.classList.add('active');
+            const saleSelect = document.getElementById('saleItemSelect');
+            if(saleSelect && itemId) {
+                saleSelect.value = itemId;
+            }
+            const qtyInput = document.getElementById('saleQty');
+            setTimeout(() => {
+                if(qtyInput) {
+                    qtyInput.focus();
+                    qtyInput.select();
+                }
+            }, 100);
+            this.showToast("Ready to Sell!", "success");
+        }
+
+        addSale() {
+            const itemId = document.getElementById('saleItemSelect').value;
+            const qty = parseInt(document.getElementById('saleQty').value) || 0;
+            if(qty <= 0) return this.showToast('Invalid quantity', 'error');
+            const context = this.data[this.currentBranch][this.currentDate];
+            context.sales.push({ id: Date.now(), itemId: itemId, qty: qty, timestamp: new Date().toISOString() });
+            this.saveData();
+            this.showToast('Sale added', 'success');
+            this.renderSalesLog();
+            this.updateDashboard();
+            this.renderInventoryTable();
+            this.renderProductionReport();
+            this.renderSummaryReport();
+            document.getElementById('saleQty').value = 1;
+        }
+
+        deleteSale(id) {
+            const context = this.data[this.currentBranch][this.currentDate];
+            context.sales = context.sales.filter(s => s.id !== id);
+            this.saveData();
+            this.renderSalesLog();
+            this.updateDashboard();
+            this.renderInventoryTable();
+            this.renderProductionReport();
+            this.renderSummaryReport();
+        }
+
+        renderSalesLog() {
+            const list = document.getElementById('salesLogList');
+            const context = this.data[this.currentBranch][this.currentDate];
+            list.innerHTML = '';
+            let total = 0;
+            [...context.sales].reverse().forEach(sale => {
+                const item = this.menuItems.find(i => i.id === sale.itemId);
+                if(item) { 
+                    total += sale.qty;
+                    const li = document.createElement('li');
+                    li.style.cssText = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; font-size:13px;";
+                    li.innerHTML = `<div><div>${item.name}</div><small style="color:#777;">${item.price} AED x${sale.qty}</small></div></div><button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="app.deleteSale(${sale.id})"><i class="fas fa-trash"></i></button>`;
+                    list.appendChild(li);
+                }
+            });
+            document.getElementById('totalSalesCount').innerText = total;
+        }
+
+        renderProductionReport() {
+            const tbody = document.getElementById('productionBody');
+            tbody.innerHTML = '';
+            const context = this.data[this.currentBranch][this.currentDate];
+            let totalOilMl = 0;
+            let totalFlourG = 0;
+            const salesMap = {};
+            context.sales.forEach(sale => {
+                if(!salesMap[sale.itemId]) salesMap[sale.itemId] = 0;
+                salesMap[sale.itemId] += sale.qty;
+            });
+            const fragment = document.createDocumentFragment();
+            Object.keys(salesMap).forEach(itemId => {
+                const totalQty = salesMap[itemId];
+                const item = this.menuItems.find(i => i.id === itemId);
+                if(item) {
+                    const itemOilMl = totalQty * (item.oilPerUnit || 0);
+                    const itemFlourG = totalQty * (item.flourPerUnit || 0);
+                    totalOilMl += itemOilMl;
+                    totalFlourG += itemFlourG;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td style="text-align:left;">${item.name}</td><td style="font-weight:bold;">${item.oilPerUnit || 0}</td><td style="font-weight:bold;">${item.flourPerUnit || 0}</td><td>${totalQty}</td><td style="color: var(--oil-color); font-weight:bold;">${(itemOilMl / 1000).toFixed(2)}</td><td style="color: var(--flour-color); font-weight:bold;">${(itemFlourG / 1000).toFixed(2)}</td>`;
+                    fragment.appendChild(row);
+                }
+            });
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+            document.getElementById('prodTotalOilLtr').innerText = (totalOilMl / 1000).toFixed(2);
+            document.getElementById('prodTotalFlourKg').innerText = (totalFlourG / 1000).toFixed(2);
+            this.updateDashboardShortage();
+        }
+
+        renderInventoryTable() {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+            const context = this.data[this.currentBranch][this.currentDate];
+            let totalVariance = 0;
+            const fragment = document.createDocumentFragment();
+            this.rawMaterials.forEach(rm => {
+                let usageVal = 0;
+                let usageType = "Theo";
+                if (rm.id === 'rm033' || rm.id === 'rm029') {
+                    usageType = "Phys";
+                    const inv = context.inventory[rm.id] || { begin: 0, transfer: 0, waste: 0, physical: 0 };
+                    usageVal = (parseFloat(inv.begin || 0) + parseFloat(inv.transfer || 0) - parseFloat(inv.waste || 0) - parseFloat(inv.physical || 0));
+                    if(usageVal < 0) usageVal = 0; 
+                } else {
+                    const recipesUsage = this.getUsage(context.sales);
+                    usageVal = recipesUsage[rm.id] || 0;
+                }
+                const inv = context.inventory[rm.id] || { begin: 0, transfer: 0, waste: 0, physical: 0 };
+                const expectedEnd = parseFloat(inv.begin || 0) + parseFloat(inv.transfer || 0) - parseFloat(inv.waste || 0) - usageVal;
+                const variance = parseFloat(inv.physical || 0) - expectedEnd;
+                totalVariance += variance;
+                const row = document.createElement('tr');
+                const varClass = variance < 0 ? 'text-danger' : (variance > 0 ? 'text-success' : '');
+                row.innerHTML = `<td style="text-align:left;">${rm.name}</td><td>${rm.unit}</td><td><input type="number" step="0.01" value="${inv.begin || 0}" onchange="app.updateInvVal('${rm.id}', 'begin', this.value)"></td><td><input type="number" step="0.01" value="${inv.transfer || 0}" onchange="app.updateInvVal('${rm.id}', 'transfer', this.value)"></td><td><input type="number" step="0.01" value="${inv.waste || 0}" onchange="app.updateInvVal('${rm.id}', 'waste', this.value)"></td><td style="background:rgba(0,0,0,0.03);"><strong>${usageVal.toFixed(3)}</strong><span class="usage-calc-type" style="color:${usageType === 'Phys' ? 'var(--oil-color)' : '#888'}">(${usageType})</span></td><td><input type="number" step="0.01" value="${inv.physical || 0}" onchange="app.updateInvVal('${rm.id}', 'physical', this.value)"></td><td class="variance-cell ${varClass}">${variance.toFixed(2)}</td>`;
+                fragment.appendChild(row);
+            });
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+            document.getElementById('dashTotalVariance').innerText = totalVariance.toFixed(2);
+            document.getElementById('dashTotalSales').innerText = context.sales.length;
+        }
+
+        getUsage(salesList) {
+            let usage = {};
+            this.rawMaterials.forEach(rm => usage[rm.id] = 0);
+            salesList.forEach(sale => {
+                const recipe = this.recipes[sale.itemId];
+                if(recipe) {
+                    recipe.forEach(ing => { if(usage[ing.id] !== undefined) usage[ing.id] += (ing.qty * sale.qty); });
+                }
+            });
+            return usage;
+        }
+
+        updateInvVal(rmId, field, value) {
+            const context = this.data[this.currentBranch][this.currentDate];
+            if(!context.inventory[rmId]) context.inventory[rmId] = { begin:0, transfer:0, waste:0, physical:0 };
+            context.inventory[rmId][field] = parseFloat(value) || 0;
+            this.saveData();
+            this.renderInventoryTable();
+            this.updateDashboardShortage();
+        }
+
+        updateDashboardShortage() {
+            const context = this.data[this.currentBranch][this.currentDate];
+            const invOil = context.inventory['rm033'] || { begin:0, transfer:0, waste:0, physical:0 };
+            const usageOil = (parseFloat(invOil.begin || 0) + parseFloat(invOil.transfer || 0) - parseFloat(invOil.waste || 0) - parseFloat(invOil.physical || 0));
+            const finalOil = usageOil < 0 ? 0 : usageOil;
+            const invFlour = context.inventory['rm029'] || { begin:0, transfer:0, waste:0, physical:0 };
+            const usageFlour = (parseFloat(invFlour.begin || 0) + parseFloat(invFlour.transfer || 0) - parseFloat(invFlour.waste || 0) - parseFloat(invFlour.physical || 0));
+            const finalFlour = usageFlour < 0 ? 0 : usageFlour;
+            document.getElementById('dashTotalOil').innerText = (finalOil / 1000).toFixed(2); 
+            document.getElementById('dashTotalFlour').innerText = (finalFlour / 1000).toFixed(2);
+            if(document.getElementById('dashTotalSales')) document.getElementById('dashTotalSales').innerText = context.sales.length;
+        }
+
+        updateDashboard() { this.updateDashboardShortage(); this.renderSummaryReport(); }
+
+        renderSummaryReport() {
+            const branches = ['HMD', 'KLD', 'SHB', 'MUR', 'ELC', 'BRH', 'STW', 'RGG', 'MJZ'];
+            const branchMap = { 'HMD': 'Crispy Chicken-Hamdan St', 'KLD': 'Crispy Chicken Khaldia', 'SHB': 'Crispy Chicken Shabiya 11', 'MUR': 'Crispy Chicken Muroor', 'ELC': 'Crispy Chicken Al Electra', 'BRH': 'Crispy Chicken Al Barsha', 'STW': 'Crispy Chicken Al Satwa', 'RGG': 'Crispy Chicken Al Rigga', 'MJZ': 'Crispy Chicken Al Majaz' };
+            const date = this.currentDate;
+            let varianceData = [];
+            branches.forEach(bId => {
+                const variance = this.calculateBranchVariance(bId, date);
+                varianceData.push({ id: bId, name: branchMap[bId], variance: variance });
+            });
+            const highVar = [...varianceData].sort((a, b) => b.variance - a.variance).slice(0, 5);
+            const lowVar = [...varianceData].sort((a, b) => a.variance - b.variance).slice(0, 5);
+            const highList = document.getElementById('highVarList');
+            const lowList = document.getElementById('lowVarList');
+            if (highList) {
+                highList.innerHTML = highVar.map((item, idx) => `<li style="padding: 10px; border-bottom:1px solid #eee; display: flex; justify-content: space-between;"><span>${idx+1}. ${item.name}</span><span style="font-weight:bold; color: var(--success-color);">${item.variance.toFixed(2)}</span></li>`).join('');
+            }
+            if (lowList) {
+                lowList.innerHTML = lowVar.map((item, idx) => `<li style="padding: 10px; border-bottom:1px solid #eee; display: flex; justify-content: space-between;"><span>${idx+1}. ${item.name}</span><span style="font-weight:bold; color: var(--danger-color);">${item.variance.toFixed(2)}</span></li>`).join('');
+            }
+        }
+
+        calculateBranchVariance(branchId, date) {
+            let totalVariance = 0;
+            if(!this.data[branchId] || !this.data[branchId][date]) return 0;
+            const context = this.data[branchId][date];
+            const recipesUsage = this.getUsage(context.sales);
+            this.rawMaterials.forEach(rm => {
+                const inv = context.inventory[rm.id] || { begin: 0, transfer: 0, waste: 0, physical: 0 };
+                const expectedEnd = parseFloat(inv.begin || 0) + parseFloat(inv.transfer || 0) - parseFloat(inv.waste || 0) - (recipesUsage[rm.id] || 0);
+                const variance = parseFloat(inv.physical || 0) - expectedEnd;
+                totalVariance += variance;
+            });
+            return totalVariance;
+        }
     }
-    document.getElementById('reportModal').style.display = 'flex';
-}
-
-function closeReport() {
-    document.getElementById('reportModal').style.display = 'none';
-}
-
-function downloadReportCSV() {
-    const branch = state.currentBranch || "Unspecified";
-    const varianceItems = state.results.filter(r => r.d !== 0);
-    
-    if (varianceItems.length === 0) { showToast("No variances to download!", "info"); return; }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += `Variance Report - ${branch}\n`;
-    csvContent += "Item Name,REST Qty,POS Qty,Difference\n";
-
-    varianceItems.forEach(item => {
-        const row = `"${item.name}",${item.r},${item.p},${item.d}`;
-        csvContent += row + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Variance_Report_${branch}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("CSV Downloaded!", "success");
-}
-
-function copyReport() {
-    const branch = state.currentBranch || "Unspecified";
-    const varianceItems = state.results.filter(r => r.d !== 0);
-    
-    let text = `RECONCILIATION REPORT - ${branch}\n`;
-    text += `Date: ${new Date().toLocaleDateString()}\n\n`;
-    text += `SUMMARY:\n`;
-    text += `Variance Count: ${varianceItems.length}\n`;
-    text += `Matched Items: ${state.results.length - varianceItems.length}\n\n`;
-    
-    if (varianceItems.length > 0) {
-        text += `VARIANCE DETAILS (Top 20):\n`;
-        text += `----------------------------------\n`;
-        text += `Item                | REST | POS | Diff\n`;
-        varianceItems.slice(0, 20).forEach(r => {
-            const name = r.name.substring(0, 18).padEnd(18, ' ');
-            text += `${name} | ${r.r.toString().padStart(4)} | ${r.p.toString().padStart(3)} | ${r.d}\n`;
-        });
-    } else {
-        text += `✅ Perfect Match! No variances found.\n`;
-    }
-
-    navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard!", "success"));
-}
-</script>
-
+    const app = new InventorySystem();
+    </script>
 </body>
 </html>
